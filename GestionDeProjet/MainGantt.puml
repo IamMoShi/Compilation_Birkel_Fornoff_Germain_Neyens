@@ -1,0 +1,67 @@
+@startgantt
+'https://plantuml.com/gantt-diagram
+language fr
+
+Project starts 2023-10-18
+printscale daily zoom 1
+
+'weekends are colored in AliceBlue
+saturday are colored in AliceBlue
+sunday are colored in AliceBlue
+
+'Holidays are colored in LightGray
+2023-10-28 to 2023-11-5 are colored in LightGray
+2023-12-23 to 2024-01-07 are colored in LightGray
+
+'Christmas is colored in closed
+2023-12-24 to 2023-12-26 are closed
+
+
+-- Phase 1 --
+'Analyse lexicale
+[Implémentation de l'analyseur lexical] as [Impl. Lex.] starts 2023-10-18 and lasts 10 days and is colored in SkyBlue
+then [Tests de l'analyseur lexical] as [Tests Lex.]  lasts 3 days and is colored in SkyBlue
+
+[Analyseur lexical fonctionnel] as [A. Lex. Fonc.] happens at [Tests Lex.]'s end and is colored in SkyBlue
+
+
+
+
+'Etude de la grammaire
+[Adaption de la grammaire] as [Adapt. Gram.] starts 2023-10-18 and lasts 10 days and is colored in Salmon
+then [Implémentation de la grammaire] as [Impl. Gram.] lasts 12 days and is colored in Salmon
+
+[Description de l'implémentation de la grammaire] as [Desc. Impl. Gram.] lasts 4 days and is colored in Salmon
+[Adapt. Gram.] -> [Desc. Impl. Gram.]
+
+[Documentation du code Gram] as [Doc. Code Gram.] lasts 8 days and is colored in Salmon
+[Desc. Impl. Gram.] -> [Doc. Code Gram.]
+
+[Ecriture du code] as [Ecrit. Code] lasts 6 days and is colored in Salmon
+[Desc. Impl. Gram.] -> [Ecrit. Code]
+
+
+[Tests du code de la grammaire] as [Tests Code Gram.] lasts 2 days and is colored in Salmon
+[Ecrit. Code] -> [Tests Code Gram.]
+
+[Grammaire fonctionnelle] as [Gram. Fonc.] happens at [Tests Code Gram.]'s end and is colored in Salmon
+
+-- Phase 2 --
+
+'Analyse syntaxique
+
+[Implémentation de l'analyseur syntaxique] as [Impl. Syn.] starts at [Gram. Fonc.]'s end and lasts 10 days and is colored in DarkOrange
+
+[Description de l'implémentation de l'analyseur syntaxique] as [Desc. Impl. Syn.] lasts 4 days and is colored in DarkOrange
+[Gram. Fonc.] -> [Desc. Impl. Syn.]
+
+[Documentation du code Syn.] as [Doc. Code Syn.] lasts 6 days and is colored in DarkOrange
+[Desc. Impl. Syn.] -> [Doc. Code Syn.]
+
+[Ecriture du code Syn.] as [Ecrit. Code Syn.] lasts 4 days and is colored in DarkOrange
+[Desc. Impl. Syn.] -> [Ecrit. Code Syn.]
+
+[Tests du code de l'analyseur syntaxique] as [Tests Code Syn.] lasts 2 days and is colored in DarkOrange
+[Ecrit. Code Syn.] -> [Tests Code Syn.]
+
+@endgantt
