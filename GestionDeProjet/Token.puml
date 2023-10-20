@@ -1,0 +1,117 @@
+@startuml
+
+package Compiler #DDDDDD {}
+
+package Compiler.Grammar #FFFFFF{
+
+abstract class GrammarToken {
+    -- Class variables --
+    - Token[*..] values
+    -- Instance variables --
+    - String value
+    -- Constructor --
+    + GrammarToken(String value)
+    -- Get methods --
+    + GetValue() : String
+    + GetValues() : Token[]
+    -- Abstract methods --
+    + abstract GetTokenType() : TokenType
+}
+
+class TerminalToken implements GrammarToken {
+    -- Class variables --
+    - TerminalToken[*..] values
+    -- Constructor --
+    + TerminalToken(String value)
+    -- Get methods --
+    + GetValues() : TokenType[]
+}
+
+class keywordToken implements TerminalToken {
+    -- Class variables --
+    - keywordToken[*..] values
+    -- Constructor --
+    + keywordToken(String value)
+    -- Get methods --
+    + GetValues() : TokenType[]
+}
+
+class NonTerminalToken implements GrammarToken {
+    -- Class variables --
+    - NonTerminalToken[*..] values
+    -- Instance variables --
+    - Rule[*..] rules
+    -- Constructor --
+    + NonTerminalToken(String value)
+    -- Get methods --
+    + GetValues() : TokenType[]
+}
+
+class operatorToken implements TerminalToken {
+    -- Class variables --
+    - operatorToken[*..] values
+    -- Constructor --
+    + operatorToken(String value)
+    -- Get methods --
+    + GetValues() : TokenType[]
+}
+
+
+Expression "many" *-- "1" GrammarToken
+
+
+class Expression {
+    -- Instance variables --
+    - GrammarToken[*..] tokens
+    - int position
+    - currentToken
+    -- Constructor --
+    + Expression(GrammarToken[] tokens)
+    -- Get methods --
+    + GetTokens() : GrammarToken[]
+    + GetPosition() : int
+    + GetCurrentToken() : GrammarToken
+    -- Set methods --
+    + SetPosition(int position) : void
+    -- Methods --
+    + NextToken() : GrammarToken
+}
+
+Rule "1" *-- "1" Expression
+Rule "1" *-- "1" NonTerminalToken
+
+class Rule {
+    -- Instance variables --
+    - NonTerminalToken sourceToken
+    - Expression expression
+}
+
+Lexer "1" *-- "many" TerminalToken
+
+
+}
+
+package Compiler.Lexer #FFFFFF {
+
+class Lexer {
+    -- Instance variables --
+    - String sourceCode
+    - long positionId
+    - char currentChar
+    - ArrayList<TerminalToken> tokens
+    -- Constructor --
+    + Lexer(String sourceCode)
+    -- Get methods --
+    + getNextChar() : char
+    + getTokens() : Token[]
+    + getPositionId() : long
+    + getCurrentChar() : char
+    -- Set methods --
+    + setPositionId(long positionId) : void
+    -- Methods --
+    + skipWhitespace() : void
+}
+
+}
+
+@enduml
