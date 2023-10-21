@@ -3,8 +3,8 @@ package Grammar;
 import java.util.ArrayList;
 
 public class Structure extends Type {
-    private final ArrayList<Structure> structures = new ArrayList<>();
-    private ArrayList<Variable> variables = new ArrayList<>();
+    private static ArrayList<Structure> structures = new ArrayList<>();
+    private ArrayList<VariableToken> variableTokens = new ArrayList<>();
 
     public Structure(String name) {
         super(name);
@@ -13,22 +13,22 @@ public class Structure extends Type {
 
     // Setters
 
-    public void setVariables(ArrayList<Variable> variables) {
-        this.variables = variables;
+    public void setVariables(ArrayList<VariableToken> variableTokens) {
+        this.variableTokens = variableTokens;
     }
 
-    public void addVariable(Variable variable) {
-        this.variables.add(variable);
+    public void addVariable(VariableToken variableToken) {
+        this.variableTokens.add(variableToken);
     }
 
-    public void removeVariable(Variable variable) {
-        this.variables.remove(variable);
+    public void removeVariable(VariableToken variableToken) {
+        this.variableTokens.remove(variableToken);
     }
 
     // Getters
 
-    public ArrayList<Variable> getVariables() {
-        return variables;
+    public ArrayList<VariableToken> getVariables() {
+        return variableTokens;
     }
 
     public ArrayList<Structure> getStructures() {

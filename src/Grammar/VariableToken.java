@@ -2,32 +2,36 @@ package Grammar;
 
 import java.util.ArrayList;
 
-public class Variable {
-    private final ArrayList<Variable> variables = new ArrayList<>();
+public class VariableToken extends TerminalToken{
+    private static ArrayList<VariableToken> VARIABLE_TOKENS = new ArrayList<>();
 
     private String name;
     private Type type;
     private String value;
 
-    public Variable(String name, Type type) {
+
+    public VariableToken(String name) {
+        super(name);
+        this.name = name;
+        this.type = null;
+        this.value = null;
+        VARIABLE_TOKENS.add(this);
+    }
+
+    public VariableToken(String name, Type type) {
+        super(name);
         this.name = name;
         this.type = type;
         this.value = null;
-        variables.add(this);
+        VARIABLE_TOKENS.add(this);
     }
 
-    public Variable(Type type, String value) {
-        this.name = null;
-        this.type = type;
-        this.value = value;
-        variables.add(this);
-    }
-
-    public Variable(String name, Type type, String value) {
+    public VariableToken(String name, Type type, String value) {
+        super(name);
         this.name = name;
         this.type = type;
         this.value = value;
-        variables.add(this);
+        VARIABLE_TOKENS.add(this);
     }
 
     // Setters

@@ -3,7 +3,7 @@ package Grammar;
 import java.util.ArrayList;
 
 public class Type {
-    private final ArrayList<Type> types = new ArrayList<>();
+    private static ArrayList<Type> types = new ArrayList<>();
 
     private String name;
 

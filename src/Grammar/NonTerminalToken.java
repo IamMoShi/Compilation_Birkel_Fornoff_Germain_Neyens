@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class NonTerminalToken extends GrammarToken {
 
-    private final ArrayList<NonTerminalToken> nonTerminalValues = new ArrayList<>();
+    private static ArrayList<NonTerminalToken> nonTerminalValues = new ArrayList<>();
 
     public NonTerminalToken(String value) {
         super(value);
