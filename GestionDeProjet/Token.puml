@@ -56,6 +56,51 @@ class operatorToken implements TerminalToken {
     + GetValues() : TokenType[]
 }
 
+class Variable implements TerminalToken {
+    -- instance variables --
+    - String name
+    - Type type
+    - String value
+    -- Constructor --
+    + Variable(String name, Type type)
+    + Variable(Type type, String value)
+    + Variable(String name, Type type, String value)
+    -- Get methods --
+    + GetName() : String
+    + GetType() : Type
+    + GetValue() : String
+    -- Set methods --
+    + SetValue(String value) : void
+    + SetType(Type type) : void
+    + SetName(String name) : void
+}
+
+class Type {
+    -- Class variables --
+    - Type[*..] values
+    -- Instance variables --
+    - String name
+    -- Constructor --
+    + Type(String name)
+    -- Get methods --
+    + GetName() : String
+}
+
+Type "1" *-- "many" Variable
+
+class Structure implements Type {
+    -- Class variables --
+    - Structure[*..] values
+    -- Instance variables --
+    - Variable[*..] variables
+    -- Constructor --
+    + Structure(String name)
+    -- Get methods --
+    + GetVariables() : Variable[]
+    -- Set methods --
+    + AddVariable(Variable variable) : void
+    + RemoveVariable(Variable variable) : void
+}
 
 Expression "many" *-- "1" GrammarToken
 
