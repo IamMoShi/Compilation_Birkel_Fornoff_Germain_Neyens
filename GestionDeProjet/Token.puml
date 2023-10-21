@@ -12,22 +12,20 @@ abstract class GrammarToken {
     -- Constructor --
     + GrammarToken(String value)
     -- Get methods --
-    + GetValue() : String
-    + GetValues() : Token[]
-    -- Abstract methods --
-    + abstract GetTokenType() : TokenType
+    + getValue() : String
+    + getValues() : Token[]
 }
 
-class TerminalToken implements GrammarToken {
+class TerminalToken extends GrammarToken {
     -- Class variables --
-    - TerminalToken[*..] values
+    - TerminalToken[*..] terminalValues
     -- Constructor --
     + TerminalToken(String value)
     -- Get methods --
-    + GetValues() : TokenType[]
+    + getTerminalValues() : TerminalToken[*..]
 }
 
-class keywordToken implements TerminalToken {
+class keywordToken extends TerminalToken {
     -- Class variables --
     - keywordToken[*..] values
     -- Constructor --
@@ -36,18 +34,18 @@ class keywordToken implements TerminalToken {
     + GetValues() : TokenType[]
 }
 
-class NonTerminalToken implements GrammarToken {
+class NonTerminalToken extends GrammarToken {
     -- Class variables --
-    - NonTerminalToken[*..] values
+    - NonTerminalToken[*..] nonTerminalValues
     -- Instance variables --
     - Rule[*..] rules
     -- Constructor --
     + NonTerminalToken(String value)
     -- Get methods --
-    + GetValues() : TokenType[]
+    + GetNonTerminalValues() : NonTerminalToken[*..]
 }
 
-class operatorToken implements TerminalToken {
+class operatorToken extends TerminalToken {
     -- Class variables --
     - operatorToken[*..] values
     -- Constructor --
@@ -56,7 +54,7 @@ class operatorToken implements TerminalToken {
     + GetValues() : TokenType[]
 }
 
-class Variable implements TerminalToken {
+class Variable extends TerminalToken {
     -- instance variables --
     - String name
     - Type type
@@ -77,13 +75,14 @@ class Variable implements TerminalToken {
 
 class Type {
     -- Class variables --
-    - Type[*..] values
+    - Type[*..] types
     -- Instance variables --
     - String name
     -- Constructor --
     + Type(String name)
     -- Get methods --
     + GetName() : String
+    + GetTypes() : Type[]
 }
 
 Type "1" *-- "many" Variable
@@ -98,6 +97,7 @@ class Structure implements Type {
     -- Get methods --
     + GetVariables() : Variable[]
     -- Set methods --
+    + setVariables(ArrayList<Variable> variables) : void
     + AddVariable(Variable variable) : void
     + RemoveVariable(Variable variable) : void
 }
