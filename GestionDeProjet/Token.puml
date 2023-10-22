@@ -19,19 +19,15 @@ abstract class GrammarToken {
 class TerminalToken extends GrammarToken {
     -- Class variables --
     - TerminalToken[*..] terminalValues
+    - Type type
     -- Constructor --
     + TerminalToken(String value)
+    + TerminalToken(String value, Type type)
     -- Get methods --
     + getTerminalValues() : TerminalToken[*..]
-}
-
-class keywordToken extends TerminalToken {
-    -- Class variables --
-    - keywordToken[*..] values
-    -- Constructor --
-    + keywordToken(String value)
-    -- Get methods --
-    + GetValues() : TokenType[]
+    + getType() : Type
+    -- Set methods --
+    + setType(Type type) : void
 }
 
 class NonTerminalToken extends GrammarToken {
@@ -43,34 +39,6 @@ class NonTerminalToken extends GrammarToken {
     + NonTerminalToken(String value)
     -- Get methods --
     + GetNonTerminalValues() : NonTerminalToken[*..]
-}
-
-class operatorToken extends TerminalToken {
-    -- Class variables --
-    - operatorToken[*..] values
-    -- Constructor --
-    + operatorToken(String value)
-    -- Get methods --
-    + GetValues() : TokenType[]
-}
-
-class Variable extends TerminalToken {
-    -- instance variables --
-    - String name
-    - Type type
-    - String value
-    -- Constructor --
-    + Variable(String name, Type type)
-    + Variable(Type type, String value)
-    + Variable(String name, Type type, String value)
-    -- Get methods --
-    + GetName() : String
-    + GetType() : Type
-    + GetValue() : String
-    -- Set methods --
-    + SetValue(String value) : void
-    + SetType(Type type) : void
-    + SetName(String name) : void
 }
 
 class Type {
@@ -85,9 +53,9 @@ class Type {
     + GetTypes() : Type[]
 }
 
-Type "1" *-- "many" Variable
+TerminalToken "many" *-- "1" Type
 
-class Structure implements Type {
+class Structure extends Type {
     -- Class variables --
     - Structure[*..] values
     -- Instance variables --

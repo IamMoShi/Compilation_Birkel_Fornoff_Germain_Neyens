@@ -20,6 +20,6 @@ public class Main {
 
         Lexer lexer = new Lexer(sourceCode);
         lexer.tokenize();
-        System.out.println(lexer.getTokens());
+        lexer.printTokensTypes();
     }
 }
