@@ -112,6 +112,8 @@ public class Lexer {
                 break;
             case ':':
                 this.newTerminalToken(":", "COLON");
+                this.getNextChar();
+                break;
             case '\n':
                 this.getNextChar();
                 break;
