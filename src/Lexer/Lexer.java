@@ -51,7 +51,7 @@ public class Lexer {
 
     // SPACES AND COMMENTS Ada *********************************************************************************
     private void skipWhitespace() {
-        while (this.currentChar != ' ' && Character.isWhitespace(this.currentChar)) {
+        while (Character.isWhitespace(this.currentChar) && positionID < this.sourceCode.length() - 1) {
             this.getNextChar();
         }
     }
@@ -64,27 +64,47 @@ public class Lexer {
 
     // PONCTUATION Ada **************************************************************************
 
-    private void isPunctuation(){
+    private void isPunctuation() {
         switch (this.currentChar) {
-            case '(': this.newTerminalToken("("); this.getNextChar(); break;
-            case ')': this.newTerminalToken(")"); this.getNextChar(); break;
-            case ';': this.newTerminalToken(";"); this.getNextChar(); break;
-            case '\n': this.getNextChar(); break;
+            case '(': this.newTerminalToken("(");
+                this.getNextChar();
+                break;
+            case ')': this.newTerminalToken(")");
+                this.getNextChar();
+                break;
+            case ';': this.newTerminalToken(";");
+                this.getNextChar();
+                break;
+            case '\n': this.getNextChar();
+                break;
         }
     }
 
     // OPERATORS Ada *******************************************************************************************
     private void isOperator() {
         switch (this.currentChar) {
-            case ':': equals(); break;
-            case '+': this.newTerminalToken("+"); this.getNextChar(); break;
-            case '-': this.newTerminalToken("-"); this.getNextChar(); break;
-            case '*': this.newTerminalToken("*"); this.getNextChar(); break;
-            case '/': this.newTerminalToken("/"); this.getNextChar(); break;
-            case '=': this.newTerminalToken("="); this.getNextChar(); break;
+            case ':': equals();
+                break;
+            case '+': this.newTerminalToken("+");
+                this.getNextChar();
+                break;
+            case '-': this.newTerminalToken("-");
+                this.getNextChar();
+                break;
+            case '*': this.newTerminalToken("*");
+                this.getNextChar();
+                break;
+            case '/': this.newTerminalToken("/");
+                this.getNextChar();
+                break;
+            case '=': this.newTerminalToken("=");
+                this.getNextChar();
+                break;
 
-            case '<': inferior(); break;
-            case '>': superior(); break;
+            case '<': inferior();
+                break;
+            case '>': superior();
+                break;
         }
     }
 
@@ -114,14 +134,32 @@ public class Lexer {
         } else {
             // Error Ada
         }
+        this.getNextChar();
+    }
+
+    // STRING Ada *******************************************************************************************
+
+    private void isString() {
+        if (this.currentChar == '"') {
+            this.getNextChar();
+            System.out.println("Current char" + this.currentChar);
+            StringBuilder word = new StringBuilder();
+            while (this.currentChar != '"') {
+                word.append(this.currentChar);
+                this.getNextChar();
+            }
+            this.newTerminalToken(word.toString());
+            System.out.println(word);
+            this.getNextChar();
+        }
     }
 
     // KEYWORDS Ada *****************************************************************************
 
     private String currentWord() {
-        // Check if the current char is a letter or a number
+        // Check if the current char is a letter or a number or an underscore
         StringBuilder word = new StringBuilder();
-        while (Character.isLetter(this.currentChar) || Character.isDigit(this.currentChar)) {
+        while (Character.isLetter(this.currentChar) || Character.isDigit(this.currentChar) || this.currentChar == '_' || this.currentChar == '.') {
             word.append(this.currentChar);
             this.getNextChar();
         }
@@ -134,7 +172,9 @@ public class Lexer {
         if (Keyword.isKeyword(word)) {
             this.newTerminalToken(word);
         } else {
-            this.newVariableToken(word);
+            if (!word.isEmpty()) {
+                this.newVariableToken(word);
+            }
         }
     }
 
@@ -143,18 +183,16 @@ public class Lexer {
 
     public ArrayList<TerminalToken> tokenize() {
         while (this.positionID < this.sourceCode.length() - 1) {
-            this.getNextChar();
-
             // ---------------------------------------------------------------------------------------------
             // Space Ada
-            if (Character.isWhitespace(this.currentChar)) {
-                this.skipWhitespace();
-            }
+            this.skipWhitespace();
+
             // Comment Ada
             if (this.currentChar == '-') {
                 this.getNextChar();
                 if (this.currentChar == '-') {
                     this.skipOneLineComment();
+                    this.getNextChar();
                 } else {
                     // Error Ada
                 }
@@ -167,9 +205,12 @@ public class Lexer {
             // Operator Ada *******************************************************************************
             this.isOperator();
 
+            // String Ada ********************************************************************************
+            this.isString();
+
             // KEYWORDS Ada *****************************************************************************
             this.isKeyword();
-
+            //System.out.println("Current char" + this.currentChar);
         }
         return this.tokens;
     }

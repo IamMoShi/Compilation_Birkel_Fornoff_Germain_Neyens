@@ -18,4 +18,8 @@ public abstract class GrammarToken {
     public ArrayList<GrammarToken> getValues() {
         return values;
     }
+
+    public String toString() {
+        return this.value;
+    }
 }

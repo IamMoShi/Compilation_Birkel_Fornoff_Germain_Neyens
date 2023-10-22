@@ -1,0 +1,9 @@
+with Ada.Text_IO;
+
+procedure Instanciation_Variable is
+   Ma_Variable : Integer;  -- Déclaration de la variable Ma_Variable
+
+begin
+   Ma_Variable := 42;  -- Instanciation de la variable avec la valeur 42
+   Ada.Text_IO.Put_Line("La valeur de Ma_Variable est : ");
+end Instanciation_Variable;
