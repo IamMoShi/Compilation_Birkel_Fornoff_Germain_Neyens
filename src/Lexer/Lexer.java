@@ -75,6 +75,9 @@ public class Lexer {
             case ';': this.newTerminalToken(";");
                 this.getNextChar();
                 break;
+            case ',': this.newTerminalToken(",");
+                this.getNextChar();
+                break;
             case '\n': this.getNextChar();
                 break;
         }
@@ -210,7 +213,7 @@ public class Lexer {
 
             // KEYWORDS Ada *****************************************************************************
             this.isKeyword();
-            //System.out.println("Current char" + this.currentChar);
+            System.out.println("Current char" + this.currentChar);
         }
         return this.tokens;
     }
