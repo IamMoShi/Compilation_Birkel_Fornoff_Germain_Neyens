@@ -4,6 +4,8 @@ import Grammar.TerminalToken;
 import Grammar.Keyword;
 import Grammar.VariableToken;
 
+import Error.LexerError;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +15,13 @@ public class Lexer {
 
     private String sourceCode;
     private int positionID;
+    private int lineCounter;
+    private int columnCounter;
     private char currentChar;
+
     private ArrayList<TerminalToken> tokens;
+
+
 
     /* CONSTRUCTOR -------------------------------------------------------------------------------------------- */
 
@@ -22,6 +29,7 @@ public class Lexer {
         this.sourceCode = sourceCode;
         this.positionID = -1;
         this.currentChar = ' ';
+        this.lineCounter = 1;
         this.tokens = new ArrayList<TerminalToken>();
     }
 
@@ -29,6 +37,7 @@ public class Lexer {
 
     public void getNextChar() {
         this.positionID += 1;
+        this.columnCounter += 1;
         if (this.positionID > this.sourceCode.length() - 1) {
             this.currentChar = ' ';
         } else {
@@ -43,9 +52,9 @@ public class Lexer {
         for (TerminalToken token : this.tokens) {
             // Create a formatted string for each token
             String formattedToken;
-            if (token.getValue().equals(":") || token.getValue().equals(";") || token.getValue().equals(",") )  {
+            if (token.getValue().equals(":") || token.getValue().equals(";") || token.getValue().equals(",")) {
                 formattedToken = "'" + token.getValue() + "'" + " : " + token.getType().getName();
-            }else {
+            } else {
                 formattedToken = token.getValue() + " : " + token.getType().getName();
             }
             formattedTokens.add(formattedToken);
@@ -80,6 +89,10 @@ public class Lexer {
     // SPACES AND COMMENTS Ada *********************************************************************************
     private void skipWhitespace() {
         while (Character.isWhitespace(this.currentChar) && positionID < this.sourceCode.length() - 1) {
+            if (this.currentChar == '\n') {
+                this.lineCounter += 1;
+                this.columnCounter = 0;
+            }
             this.getNextChar();
         }
     }
@@ -111,10 +124,7 @@ public class Lexer {
                 this.getNextChar();
                 break;
             case ':':
-                this.newTerminalToken(":", "COLON");
-            case '\n':
-                this.getNextChar();
-                break;
+                this.assignment();
         }
     }
 
@@ -161,7 +171,6 @@ public class Lexer {
             this.getNextChar();
         } else {
             this.newTerminalToken("<", "INFERIOR");
-
         }
     }
 
@@ -177,26 +186,29 @@ public class Lexer {
     private void assignment() {
         if (this.sourceCode.charAt(this.positionID + 1) == '=') {
             this.newTerminalToken(":=", "ASSIGNMENT");
-
-            this.getNextChar();
         } else {
-            // Error Ada
+            newTerminalToken(":", "COLON");
         }
         this.getNextChar();
     }
 
     // STRING Ada *******************************************************************************************
 
-    private void isString() {
+    private void isString() throws LexerError {
         if (this.currentChar == '"') {
             this.getNextChar();
             StringBuilder word = new StringBuilder();
             while (this.currentChar != '"') {
+                if (this.positionID > this.sourceCode.length() - 1) {
+                    throw new LexerError(this.lineCounter, this.columnCounter, "Missing closing quote");
+                }
+                if (this.currentChar == '\n') {
+                    throw new LexerError(this.lineCounter, this.columnCounter, "Missing closing quote");
+                }
                 word.append(this.currentChar);
                 this.getNextChar();
             }
             this.newTerminalToken(word.toString(), "STRING");
-            System.out.println(word);
             this.getNextChar();
         }
     }
@@ -257,10 +269,9 @@ public class Lexer {
         String word = this.currentIdentifier();
         if (Keyword.isKeyword(word)) {
             this.newTerminalToken(word, "KEYWORD");
-        } else if (word.equals("Ada.Text_IO")){
+        } else if (word.equals("Ada.Text_IO")) {
             this.newTerminalToken(word, "LIBRARY");
-        }
-        else {
+        } else {
             if (!word.isEmpty()) {
                 this.newTerminalToken(word, "IDENTIFIER");
             }
@@ -270,8 +281,9 @@ public class Lexer {
 
     /* TOKENIZER ---------------------------------------------------------------------------------------------- */
 
-    public ArrayList<TerminalToken> tokenize() {
+    public ArrayList<TerminalToken> tokenize() throws LexerError {
         while (this.positionID < this.sourceCode.length() - 1) {
+            int currentPosition = this.positionID;
             // ---------------------------------------------------------------------------------------------
             // Space Ada
             this.skipWhitespace();
@@ -283,7 +295,7 @@ public class Lexer {
                     this.skipOneLineComment();
                     this.getNextChar();
                 } else {
-                    // Error Ada
+                    throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'" + "Expected '-'");
                 }
             }
             // ---------------------------------------------------------------------------------------------
@@ -303,10 +315,13 @@ public class Lexer {
             // Float Ada *******************************************************************************
             this.isFloat();
 
-
             // KEYWORDS Ada *****************************************************************************
             this.isKeyword();
-            System.out.println("Current char" + this.currentChar);
+
+            if (currentPosition == this.positionID) {
+                throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'");
+            }
+
         }
         return this.tokens;
     }
