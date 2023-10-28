@@ -1,10 +1,8 @@
 package Lexer;
 
-import Grammar.TerminalToken;
-import Grammar.Keyword;
-import Grammar.VariableToken;
-
 import Error.LexerError;
+import Grammar.Token.TerminalToken;
+import Grammar.Token.Keyword;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,10 +76,6 @@ public class Lexer {
 
     public void newTypeToken(TerminalToken token, String name) {
         token.setType(name);
-    }
-
-    public void newVariableToken(String name) {
-        this.tokens.add(new VariableToken(name));
     }
 
     /* ANALYZER METHODS --------------------------------------------------------------------------------------- */

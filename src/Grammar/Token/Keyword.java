@@ -1,4 +1,6 @@
-package Grammar;
+package Grammar.Token;
+
+import Grammar.Token.TerminalToken;
 
 import java.util.AbstractList;
 import java.util.ArrayList;

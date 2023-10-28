@@ -1,4 +1,4 @@
-package Grammar;
+package Grammar.Type;
 
 import java.util.ArrayList;
 
