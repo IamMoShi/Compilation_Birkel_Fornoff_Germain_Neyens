@@ -11,13 +11,13 @@ public class Lexer {
 
     /* PRIVATE VARIABLES -------------------------------------------------------------------------------------- */
 
-    private String sourceCode;
+    private final String sourceCode;
     private int positionID;
     private int lineCounter;
     private int columnCounter;
     private char currentChar;
 
-    private ArrayList<TerminalToken> tokens;
+    private final ArrayList<TerminalToken> tokens;
 
 
 
@@ -28,7 +28,7 @@ public class Lexer {
         this.positionID = -1;
         this.currentChar = ' ';
         this.lineCounter = 1;
-        this.tokens = new ArrayList<TerminalToken>();
+        this.tokens = new ArrayList<>();
     }
 
     /* GETTERS AND SETTERS ------------------------------------------------------------------------------------ */
@@ -193,7 +193,7 @@ public class Lexer {
         /* Appends after ' and check if it is :
             - T'val(e) : T is a type, val is a value and e is an expression
             - 'a' : a is a character
-            - '''' : ' is a character but we need to escape it
+            - '''' : ' is a character, but we need to escape it
          */
         if (this.currentChar == '\'') {
             if (sourceCode.charAt(positionID + 1) == '\'') {

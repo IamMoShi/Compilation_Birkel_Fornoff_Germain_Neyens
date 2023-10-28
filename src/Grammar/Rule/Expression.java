@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Expression {
-    private ArrayList<GrammarToken> tokens;
+    private final ArrayList<GrammarToken> tokens;
 
     public Expression() {
-        this.tokens = new ArrayList<GrammarToken>();
+        this.tokens = new ArrayList<>();
     }
 
     public  Expression(GrammarToken[] tokens) {
-        this.tokens = new ArrayList<GrammarToken>();
+        this.tokens = new ArrayList<>();
         Collections.addAll(this.tokens, tokens);
     }
 

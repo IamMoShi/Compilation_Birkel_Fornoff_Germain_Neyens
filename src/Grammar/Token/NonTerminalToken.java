@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class NonTerminalToken extends GrammarToken {
 
-    private static ArrayList<NonTerminalToken> nonTerminalValues = new ArrayList<>();
+    private static final ArrayList<NonTerminalToken> nonTerminalValues = new ArrayList<>();
 
     private Action action;
 

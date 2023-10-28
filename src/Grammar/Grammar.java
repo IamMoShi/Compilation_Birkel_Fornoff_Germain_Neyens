@@ -7,9 +7,9 @@ import Grammar.Token.NonTerminalToken;
 import java.util.ArrayList;
 
 public class Grammar {
-    private ArrayList<TerminalToken> terminalesValues;
-    private ArrayList<NonTerminalToken> nonTerminalValues;
-    private ArrayList<Rule> rules;
+    private final ArrayList<TerminalToken> terminalesValues;
+    private final ArrayList<NonTerminalToken> nonTerminalValues;
+    private final ArrayList<Rule> rules;
 
     public Grammar() {
         terminalesValues = new ArrayList<>();

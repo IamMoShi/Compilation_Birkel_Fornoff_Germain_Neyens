@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public abstract class GrammarToken {
     private static final ArrayList<GrammarToken> values = new ArrayList<>();
-    private String value;
+    private final String value;
 
     public GrammarToken(String value) {
         this.value = value;

@@ -5,7 +5,7 @@ import Grammar.Type.Type;
 import java.util.ArrayList;
 
 public class TerminalToken extends GrammarToken {
-    private static ArrayList<TerminalToken> terminalesValues = new ArrayList<>();
+    private static final ArrayList<TerminalToken> terminalesValues = new ArrayList<>();
     private Type type;
 
     public TerminalToken(String value) {
@@ -13,7 +13,7 @@ public class TerminalToken extends GrammarToken {
         terminalesValues.add(this);
     }
 
-    public ArrayList<TerminalToken> geTerminalesValues() {
+    public ArrayList<TerminalToken> getTerminalesValues() {
         return terminalesValues;
     }
 
