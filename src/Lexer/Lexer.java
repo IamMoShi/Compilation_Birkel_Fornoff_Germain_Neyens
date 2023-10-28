@@ -129,7 +129,7 @@ public class Lexer {
     }
 
     // OPERATORS Ada *******************************************************************************************
-    private void isOperator() {
+    private void isOperator() throws LexerError {
         switch (this.currentChar) {
             case ':':
                 assignment();
@@ -161,6 +161,9 @@ public class Lexer {
             case '>':
                 superior();
                 break;
+            case '\'':
+                isCharacter();
+                break;
         }
     }
 
@@ -188,6 +191,36 @@ public class Lexer {
             this.newTerminalToken(":=", "ASSIGNMENT");
         } else {
             newTerminalToken(":", "COLON");
+        }
+        this.getNextChar();
+    }
+
+    private void isCharacter() throws LexerError {
+        /* Appends after ' and check if it is :
+            - T'val(e) : T is a type, val is a value and e is an expression
+            - 'a' : a is a character
+            - '''' : ' is a character but we need to escape it
+         */
+        if (this.currentChar == '\'') {
+            if (sourceCode.charAt(positionID + 1) == '\'') {
+                this.getNextChar();
+                if (sourceCode.charAt(positionID + 1) == '\'' && sourceCode.charAt(positionID + 2) == '\'') {
+                    // case : ''''
+                    this.newTerminalToken("'", "CHARACTER");
+                    this.getNextChar();
+                    this.getNextChar();
+                } else {
+                    // Case : '' or '''
+                    throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'" + "Expected '''");
+                }
+            } else if (sourceCode.charAt(positionID + 2) == '\'') {
+                // Case : 'a'
+                this.getNextChar(); // 'a' : the char
+                this.newTerminalToken(String.valueOf(this.currentChar), "CHARACTER");
+                this.getNextChar(); // '\'' : the closing quote
+            } else {
+                this.newTerminalToken("'", "APOSTROPHE"); // Reference for types
+            }
         }
         this.getNextChar();
     }

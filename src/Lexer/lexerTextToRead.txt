@@ -28,3 +28,4 @@ choix : integer ;
             put(valeur) ;
         end if;
     end unDebut ;
+
