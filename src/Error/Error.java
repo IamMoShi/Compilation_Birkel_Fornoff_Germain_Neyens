@@ -1,8 +1,8 @@
 package Error;
 
 public class Error extends Exception {
-    private int line;
-    private int column;
+    private final int line;
+    private final int column;
 
     public Error(int line, int column) {
         this.line = line;

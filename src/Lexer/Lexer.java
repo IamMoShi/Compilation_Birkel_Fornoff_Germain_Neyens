@@ -1,10 +1,8 @@
 package Lexer;
 
-import Grammar.TerminalToken;
-import Grammar.Keyword;
-import Grammar.VariableToken;
-
 import Error.LexerError;
+import Grammar.Token.TerminalToken;
+import Grammar.Token.Keyword;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +11,13 @@ public class Lexer {
 
     /* PRIVATE VARIABLES -------------------------------------------------------------------------------------- */
 
-    private String sourceCode;
+    private final String sourceCode;
     private int positionID;
     private int lineCounter;
     private int columnCounter;
     private char currentChar;
 
-    private ArrayList<TerminalToken> tokens;
+    private final ArrayList<TerminalToken> tokens;
 
 
 
@@ -30,7 +28,7 @@ public class Lexer {
         this.positionID = -1;
         this.currentChar = ' ';
         this.lineCounter = 1;
-        this.tokens = new ArrayList<TerminalToken>();
+        this.tokens = new ArrayList<>();
     }
 
     /* GETTERS AND SETTERS ------------------------------------------------------------------------------------ */
@@ -80,10 +78,6 @@ public class Lexer {
         token.setType(name);
     }
 
-    public void newVariableToken(String name) {
-        this.tokens.add(new VariableToken(name));
-    }
-
     /* ANALYZER METHODS --------------------------------------------------------------------------------------- */
 
     // SPACES AND COMMENTS Ada *********************************************************************************
@@ -129,7 +123,7 @@ public class Lexer {
     }
 
     // OPERATORS Ada *******************************************************************************************
-    private void isOperator() {
+    private void isOperator() throws LexerError {
         switch (this.currentChar) {
             case ':':
                 assignment();
@@ -161,6 +155,9 @@ public class Lexer {
             case '>':
                 superior();
                 break;
+            case '\'':
+                isCharacter();
+                break;
         }
     }
 
@@ -188,6 +185,36 @@ public class Lexer {
             this.newTerminalToken(":=", "ASSIGNMENT");
         } else {
             newTerminalToken(":", "COLON");
+        }
+        this.getNextChar();
+    }
+
+    private void isCharacter() throws LexerError {
+        /* Appends after ' and check if it is :
+            - T'val(e) : T is a type, val is a value and e is an expression
+            - 'a' : a is a character
+            - '''' : ' is a character, but we need to escape it
+         */
+        if (this.currentChar == '\'') {
+            if (sourceCode.charAt(positionID + 1) == '\'') {
+                this.getNextChar();
+                if (sourceCode.charAt(positionID + 1) == '\'' && sourceCode.charAt(positionID + 2) == '\'') {
+                    // case : ''''
+                    this.newTerminalToken("'", "CHARACTER");
+                    this.getNextChar();
+                    this.getNextChar();
+                } else {
+                    // Case : '' or '''
+                    throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'" + "Expected '''");
+                }
+            } else if (sourceCode.charAt(positionID + 2) == '\'') {
+                // Case : 'a'
+                this.getNextChar(); // 'a' : the char
+                this.newTerminalToken(String.valueOf(this.currentChar), "CHARACTER");
+                this.getNextChar(); // '\'' : the closing quote
+            } else {
+                this.newTerminalToken("'", "APOSTROPHE"); // Reference for types
+            }
         }
         this.getNextChar();
     }

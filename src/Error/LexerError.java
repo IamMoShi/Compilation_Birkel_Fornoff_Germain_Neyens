@@ -2,7 +2,7 @@ package Error;
 
 public class LexerError extends Error {
 
-    private String message;
+    private final String message;
 
     public LexerError(int line, int column, String message) {
         super(line, column);
