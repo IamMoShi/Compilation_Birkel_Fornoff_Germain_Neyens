@@ -1,0 +1,17 @@
+with Ada.Text_IO; use Ada.Text_IO;
+
+procedure Structure_Example is
+   -- Déclaration de la structure
+   type Point is record
+      X : Integer;
+      Y : Integer;
+   end record;
+
+   -- Déclaration d'une instance de la structure
+   My_Point : Point;
+
+begin
+   -- Initialisation des composantes de la structure
+   My_Point.X := 10;
+   My_Point.Y := 20;
+end Structure_Example;

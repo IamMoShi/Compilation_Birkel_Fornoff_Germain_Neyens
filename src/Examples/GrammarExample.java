@@ -385,7 +385,7 @@ public class GrammarExample {
         // ajout prédicats
         // Predicate alphaPredicate = new AlphaPredicate();
         AlphaPredicate alphaPredicate = new AlphaPredicate();
-
+        /*
         // Définition des règles
         grammar.addRule(new Rule(F0, new Expression(new GrammarToken[]{with, AdaIOToken, semicolon, use, AdaIOToken, semicolon, procedure, Id0, is, F1, begin, In0, In3, end, Id2, semicolon, end_of_file})));
         grammar.addRule(new Rule(F1, new Expression(new GrammarToken[]{D0, F1})));
@@ -709,6 +709,6 @@ public class GrammarExample {
 
 
         System.out.println(grammar.toString());
-
+    */
     }
 }

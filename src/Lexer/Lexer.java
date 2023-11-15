@@ -245,6 +245,7 @@ public class Lexer {
     private String currentIdentifier() {
         // Check if the current char is a letter or a number or an underscore
         StringBuilder word = new StringBuilder();
+
         while (Character.isLetter(this.currentChar) || Character.isDigit(this.currentChar) || this.currentChar == '_' || this.currentChar == '.') {
             word.append(this.currentChar);
             this.getNextChar();
@@ -299,7 +300,7 @@ public class Lexer {
         } else if (word.equals("Ada.Text_IO")) {
             this.newTerminalToken(word, "LIBRARY");
         } else {
-            if (!word.isEmpty()) {
+            if (!word.isEmpty() && Character.isLetter(word.charAt(0)) ) {
                 this.newTerminalToken(word, "IDENTIFIER");
             }
         }

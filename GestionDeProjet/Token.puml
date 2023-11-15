@@ -76,8 +76,6 @@ Expression "many" *-- "1" GrammarToken
 class Expression {
     -- Instance variables --
     - GrammarToken[*..] tokens
-    - int position
-    - currentToken
     -- Constructor --
     + Expression(GrammarToken[] tokens)
     -- Get methods --
