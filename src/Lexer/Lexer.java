@@ -99,8 +99,21 @@ public class Lexer {
 
     // PONCTUATION Ada **************************************************************************
 
+    private void dotAndDoubleDot() {
+        if (this.sourceCode.charAt(this.positionID + 1) == '.') {
+            this.newTerminalToken("..", "DOUBLE_DOT");
+            this.getNextChar();
+        } else {
+            this.newTerminalToken(".", "DOT");
+            this.getNextChar();
+        }
+    }
+
     private void isPunctuation() {
         switch (this.currentChar) {
+            case '.':
+                this.dotAndDoubleDot();
+                break;
             case '(':
                 this.newTerminalToken("(", "L_PARENTHESIS");
                 this.getNextChar();
@@ -246,7 +259,7 @@ public class Lexer {
         // Check if the current char is a letter or a number or an underscore
         StringBuilder word = new StringBuilder();
 
-        while (Character.isLetter(this.currentChar) || Character.isDigit(this.currentChar) || this.currentChar == '_' || this.currentChar == '.') {
+        while (Character.isLetter(this.currentChar) || Character.isDigit(this.currentChar) || this.currentChar == '_') {
             word.append(this.currentChar);
             this.getNextChar();
         }
@@ -266,14 +279,31 @@ public class Lexer {
     }
 
     private String currentFloat() {
-        // Check if the current char is a letter or a number or an underscore
+        // Analyse the next char to determine if it is a float
+        // A float is composed like this ([0-9]+.[0-9]*)
+        // If the word is not a float, return an empty string and reset the position
+        // Must know how many char to go back
         StringBuilder word = new StringBuilder();
-        while (Character.isDigit(this.currentChar) || this.currentChar == '.') {
+        int position = this.positionID;
+        int numbers = 0;
+        while (Character.isDigit(this.currentChar)) {
             word.append(this.currentChar);
+            numbers += 1;
             this.getNextChar();
         }
-
-        return word.toString();
+        if (this.currentChar == '.' && numbers > 0) {
+            word.append(this.currentChar);
+            this.getNextChar();
+            while (Character.isDigit(this.currentChar)) {
+                word.append(this.currentChar);
+                this.getNextChar();
+            }
+            if (word.length() > 1) {
+                return word.toString();
+            }
+        }
+        this.positionID = position;
+        return "";
     }
 
     private void isInteger() {

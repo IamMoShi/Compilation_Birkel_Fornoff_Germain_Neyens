@@ -13,7 +13,7 @@ public class Main {
         String repertoireCourant = System.getProperty("user.dir");
 
         // Créer le chemin complet du fichier en utilisant le répertoire courant
-        String cheminComplet = repertoireCourant + "/" + "src/Lexer/lexerTextToRead3.txt";
+        String cheminComplet = repertoireCourant + "/" + "src/Lexer/lexerTextToRead2.txt";
         System.out.println(cheminComplet);
 
         String sourceCode = FileReaderUtil.lireFichier(cheminComplet);
