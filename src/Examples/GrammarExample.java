@@ -1,14 +1,136 @@
-package Examples;
+package Grammar;
 
 import Grammar.*;
 import Grammar.Rule.*;
 import Grammar.Token.*;
 
+import java.util.ArrayList;
+
 public class GrammarExample {
+
+    private Grammar grammar;
+    
+    private ArrayList<TerminalToken> terminalTokens;
+    
+    private int position;
+    
+    private TerminalToken currentToken;
+    
+    public GrammarTest() {
+        grammar = new Grammar();
+    }
+    
+    public boolean isCurrentToken(TerminalToken token) {
+        return currentToken.getType().equals(token.getType());
+    }
+    
+    public void nextToken() {
+        position++;
+        currentToken = terminalTokens.get(position);
+    }
 
     public static void main(String[] args) {
         // Instanciation de grammar
         Grammar grammar = new Grammar();
+
+/*
+Voici les rèles de la grammaire :
+
+F0 -> with Ada.Text_IO ; use Ada.Text_IO ; procedure Ident is F1 begin In In3 end Ident2 ; EOF
+Ident2 -> Ident
+Ident2 -> ''
+F1 -> D F1
+F1 -> ''
+C0 -> Ident C1 : T ;
+C1 -> , Ident C1
+C1 -> ''
+C2 -> C C2
+C2 -> ''
+M0 -> in M1
+M1 -> out
+M1 -> ''
+M2 -> M
+M2 -> ''
+Op0 -> OPERATOR
+Ps0 -> ( P Ps1 )
+Ps1 -> ; P Ps1
+Ps1 -> ''
+Ps2 -> Ps
+Ps2 -> ''
+P0 -> Ident P1 : M2 T
+P1 -> , Ident P1
+P1 -> ''
+ch -> CHIFFRE (plus util)
+Char -> ASCII
+In0 -> Ident In1
+In0 -> Ent E1 . Ident A1 := E ;
+In0 -> char E1 . Ident A1 := E ;
+In0 -> true E1 . Ident A1 := E ;
+In0 -> float E1 . Ident A1 := E ;
+In0 -> false E1 . Ident A1 := E ;
+In0 -> null E1 . Ident A1 := E ;
+In0 -> ( E ) E1 . Ident A1 := E ;
+In0 -> not E E1 . Ident A1 :=E ;
+In0 -> - E E1 . Ident A1 := E ;
+In0 -> new Ident E1 . Ident A1 := E ;
+In0 -> character`val ( E ) E1 . Ident A1 := E ;
+In0 -> return E4 ;
+In0 -> begin In In3 end
+In0 -> if E then In In3 Eif El end if ;
+Eif -> ''
+Eif -> elseif E then In In3 Eif
+In0 -> for Ident in R1 E .. E loop In In3 end loop ;
+In0 -> while E loop In In3 end loop ;
+El -> else In In3
+El -> ''
+R1 -> reverse
+R1 -> ''
+In1 -> ;
+In1 -> A1 := E ;
+In1 -> ( E E2 ) In2
+In2 -> E1 . Ident A1 := E ;
+In2 -> ;
+In3 -> In In3
+In3 -> ''
+E1 -> Op E E1
+E1-> ''
+E2 -> , E E2
+E2 -> ''
+E3 -> : = E
+E3 -> ''
+E4 -> E
+E4 -> ''
+E-> Ident A2 E1
+E-> Ent E1 E5
+E-> Char E1 E5
+E5 -> . Ident A1 E1
+E5 -> “
+E0-> True E1 E5
+E0-> False E1 E5
+E0-> float E1 E5
+E0-> null E1 E5
+E0-> ( E ) E1 E5
+E0-> not E1 E5
+E0-> -E E1 E5
+E0-> new Ident E1 E5
+E0->  character`val E1 E5
+E0 -> Ident ( E E2 ) E1
+A1 -> E1 . Ident A1
+A1 -> ''
+A2 -> A1
+A2 -> ( E E2 ) E1 . Ident A1
+D0 -> Type Ident D1
+D0 -> Ident C1 : T E3 ;
+D0 -> procedure Ident Ps2 is F1 begin In In3 end Ident2 ;
+D0 -> function Ident Ps2 return T is F1 begin In In3 end Ident2 ;
+D1 -> ;
+D1 -> is D2
+D2 -> access Ident ;
+D2 -> record C C2 end record;
+T0 -> Ident
+T0 -> access Ident
+
+*/
 
         // Définition des tokens non terminaux
         NonTerminalToken F0 = new NonTerminalToken("F0"); //fichier
@@ -44,7 +166,7 @@ public class GrammarExample {
         NonTerminalToken E2 = new NonTerminalToken("E2");
         NonTerminalToken E3 = new NonTerminalToken("E3");
         NonTerminalToken E4 = new NonTerminalToken("E4");
-        NonTerminalToken A0 = new NonTerminalToken("A0"); //accès
+        NonTerminalToken E5 = new NonTerminalToken("E5");
         NonTerminalToken A1 = new NonTerminalToken("A1");
         NonTerminalToken A2 = new NonTerminalToken("A2");
         NonTerminalToken D0 = new NonTerminalToken("D0"); //decl
@@ -52,11 +174,12 @@ public class GrammarExample {
         NonTerminalToken D2 = new NonTerminalToken("D2");
         NonTerminalToken T0 = new NonTerminalToken("T0"); //type
         // PREDICATES:
-        NonTerminalToken Pred0 = new NonTerminalToken("Pred0");
+        // NonTerminalToken Pred0 = new NonTerminalToken("Pred0");
+
 
 
         //Définition des tokens terminaux
-        // voici les tokens terminaux: // zone d'incertitude : "and" ou "and then" et token du type, ". .", comment écrire le backslash
+        // voici les tokens terminaux: //comment écrire le backslash
 
         TerminalToken semicolon = new TerminalToken(";");
         TerminalToken comma = new TerminalToken(",");
@@ -70,7 +193,7 @@ public class GrammarExample {
         TerminalToken procedure = new TerminalToken("procedure");
         TerminalToken function = new TerminalToken("function");
         TerminalToken use = new TerminalToken("use");
-        TerminalToken with = new TerminalToken("with");
+        TerminalToken withToken = new TerminalToken("with");
         TerminalToken nullToken = new TerminalToken("null");
         TerminalToken trueToken = new TerminalToken("true");
         TerminalToken falseToken = new TerminalToken("false");
@@ -78,7 +201,7 @@ public class GrammarExample {
         TerminalToken newToken = new TerminalToken("new");
         TerminalToken returnToken = new TerminalToken("return");
         TerminalToken ifToken = new TerminalToken("if");
-        TerminalToken then = new TerminalToken("then");
+        TerminalToken thenToken = new TerminalToken("then");
         TerminalToken elseToken = new TerminalToken("else");
         TerminalToken elseifToken = new TerminalToken("elseif");
         TerminalToken endIfToken = new TerminalToken("end if");
@@ -176,13 +299,11 @@ public class GrammarExample {
         TerminalToken lessThan = new TerminalToken("<");
         TerminalToken greaterThan = new TerminalToken(">");
         TerminalToken equal = new TerminalToken("=");
-        TerminalToken space = new TerminalToken(" ");       // SPACE TOKEN HERE
+        TerminalToken space = new TerminalToken(" ");       // space token
         TerminalToken out = new TerminalToken("out");
         TerminalToken notEqual = new TerminalToken("/=");
         TerminalToken lessOrEqual = new TerminalToken("<=");
         TerminalToken greaterOrEqual = new TerminalToken(">=");
-        TerminalToken andThen = new TerminalToken("and then");   // PAS SUR
-        TerminalToken orElse = new TerminalToken("or else");     // PAS SUR
         TerminalToken andToken = new TerminalToken("and");
         TerminalToken orToken = new TerminalToken("or");
         TerminalToken AdaIOToken = new TerminalToken("Ada.Text_IO");
@@ -193,9 +314,10 @@ public class GrammarExample {
         TerminalToken access = new TerminalToken("access");
         TerminalToken record = new TerminalToken("record");
         TerminalToken accent= new TerminalToken("`");
-        TerminalToken pointPoint = new TerminalToken("..");                                          // JSP
+        TerminalToken pointPoint = new TerminalToken("..");
         TerminalToken question = new TerminalToken("?");
         TerminalToken type = new TerminalToken("type");
+        TerminalToken accessToken = new TerminalToken("access");
 
 
         // Ajout des tokens à la grammaire
@@ -233,7 +355,7 @@ public class GrammarExample {
         grammar.addNonTerminal(E2);
         grammar.addNonTerminal(E3);
         grammar.addNonTerminal(E4);
-        grammar.addNonTerminal(A0);
+        grammar.addNonTerminal(E5);
         grammar.addNonTerminal(A1);
         grammar.addNonTerminal(A2);
         grammar.addNonTerminal(D0);
@@ -262,7 +384,7 @@ public class GrammarExample {
         grammar.addTerminal(newToken);
         grammar.addTerminal(returnToken);
         grammar.addTerminal(ifToken);
-        grammar.addTerminal(then);
+        grammar.addTerminal(thenToken);
         grammar.addTerminal(elseToken);
         grammar.addTerminal(elseifToken);
         grammar.addTerminal(endIfToken);
@@ -364,8 +486,6 @@ public class GrammarExample {
         grammar.addTerminal(notEqual);
         grammar.addTerminal(lessOrEqual);
         grammar.addTerminal(greaterOrEqual);
-        grammar.addTerminal(andThen);
-        grammar.addTerminal(orElse);
         grammar.addTerminal(andToken);
         grammar.addTerminal(orToken);
         grammar.addTerminal(AdaIOToken);
@@ -377,338 +497,26 @@ public class GrammarExample {
         grammar.addTerminal(access);
         grammar.addTerminal(record);
         grammar.addTerminal(accent);
-        grammar.addTerminal(pointPoint); // JSP
+        grammar.addTerminal(pointPoint);
         grammar.addTerminal(question);
         grammar.addTerminal(type);
+        grammar.addTerminal(accessToken);
 
 
-        // ajout prédicats
-        // Predicate alphaPredicate = new AlphaPredicate();
-        AlphaPredicate alphaPredicate = new AlphaPredicate();
+
         /*
         // Définition des règles
         grammar.addRule(new Rule(F0, new Expression(new GrammarToken[]{with, AdaIOToken, semicolon, use, AdaIOToken, semicolon, procedure, Id0, is, F1, begin, In0, In3, end, Id2, semicolon, end_of_file})));
         grammar.addRule(new Rule(F1, new Expression(new GrammarToken[]{D0, F1})));
-        grammar.addRule(new Rule(F1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(C0, new Expression(new GrammarToken[]{Id0, C1, colon, T0, semicolon})));
-        grammar.addRule(new Rule(C1, new Expression(new GrammarToken[]{comma, Id0, C1})));
-        grammar.addRule(new Rule(C1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(C2, new Expression(new GrammarToken[]{C0, C2})));
-        grammar.addRule(new Rule(C2, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(Ent0, new Expression(new GrammarToken[]{ch, Ent1})));
-        grammar.addRule(new Rule(Ent1, new Expression(new GrammarToken[]{ch, Ent1})));
-        grammar.addRule(new Rule(Ent1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(M0, new Expression(new GrammarToken[]{in, M1})));
-        grammar.addRule(new Rule(M1, new Expression(new GrammarToken[]{out})));
-        grammar.addRule(new Rule(M1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(M2, new Expression(new GrammarToken[]{M0})));
-        grammar.addRule(new Rule(M2, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{equal})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{notEqual})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{lessThan})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{lessOrEqual})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{greaterThan})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{greaterOrEqual})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{plus})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{minus})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{star})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{slash})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{rem})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{and})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{andThen})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{orToken})));
-        grammar.addRule(new Rule(Op0, new Expression(new GrammarToken[]{orElse})));
-        grammar.addRule(new Rule(Ps0, new Expression(new GrammarToken[]{openParenthesis, P0, Ps1, closeParenthesis})));
-        grammar.addRule(new Rule(Ps1, new Expression(new GrammarToken[]{comma, P0, Ps1})));
-        grammar.addRule(new Rule(Ps1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(Ps2, new Expression(new GrammarToken[]{Ps0})));
-        grammar.addRule(new Rule(Ps2, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(P0, new Expression(new GrammarToken[]{Id0, P1, colon, M2, T0})));
-        grammar.addRule(new Rule(P1, new Expression(new GrammarToken[]{comma, Id0, P1})));
-        grammar.addRule(new Rule(P1, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(Id0, new Expression(new GrammarToken[]{alpha, Id1})));
-        // --- modification à faire avec un prédicats ---
+        
+        */
+        
+        //on utilise les règles pour définir :
+        grammar.addNonTerminal(F0.setAction(() -> {
+            if (isCurrentToken(withToken)){
 
-        // Id→Pred(α)Id1
-        // Pred(X)​→rules_alpha(X)∣rules_ch()∣rules_underscore()
-        // Id1→αId1∣chId1∣_Id1∣ε​
+            }
+        }));
 
-        // rules_alpha(X): Prendre alpha.
-        // rules_ch(): Les règles correspondant à l'option ch.
-        // rules_underscore() : // _.
-
-
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{alpha, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{ch, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{underscore, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{})));
-
-        // // Ajout règle du Predicate 
-        // grammar.addRule(new Rule(Pred0, new Expression(new GrammarToken[]{Id0, alphaPredicate})));
-        // grammar.addRule(new Rule(Pred0, new Expression(new GrammarToken[]{alpha, alphaPredicate})));
-
-        // // Ajout des règles à la grammaire
-        // grammaire.addRule(new Rule(Pred, new Expression(new GrammarToken[]{Id, alphaPredicate})));
-        // grammaire.addRule(new Rule(Pred, new Expression(new GrammarToken[]{alpha, alphaPredicate})));
-        // // ... autres règles avec Pred
-
-
-        // grammar.addRule(new Rule(alphaPredicate, new Expression(new GrammarToken[]{Id0, new Predicate()})));
-        // grammar.addRule(new Rule(Pred, new Expression(new GrammarToken[]{alpha})));
-        // grammar.addRule(new Rule(Pred, new Expression(new GrammarToken[]{ch})));
-        // grammar.addRule(new Rule(Pred, new Expression(new GrammarToken[]{underscore})));
-
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{alpha, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{ch, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{underscore, Id1})));
-        // grammar.addRule(new Rule(Id1, new Expression(new GrammarToken[]{})));
-
-        // --- fin de la modification ---
-
-        grammar.addRule(new Rule(Id2, new Expression(new GrammarToken[]{Id0})));
-        grammar.addRule(new Rule(Id2, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{aToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{bToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{cToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{dToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{eToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{fToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{gToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{hToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{iToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{jToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{kToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{lToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{mToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{nToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{oToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{pToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{qToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{rToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{sToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{tToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{uToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{vToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{wToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{xToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{yToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{zToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{AToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{BToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{CToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{DToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{EToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{FToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{GToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{HToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{IToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{JToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{KToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{LToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{MToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{NToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{OToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{PToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{QToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{RToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{SToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{TToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{UToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{VToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{WToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{XToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{YToken})));
-        grammar.addRule(new Rule(alpha, new Expression(new GrammarToken[]{ZToken})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{zero})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{one})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{two})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{three})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{four})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{five})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{six})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{seven})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{eight})));
-        grammar.addRule(new Rule(ch, new Expression(new GrammarToken[]{nine})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{exclamation})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{quote})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{hashtag})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{dollar})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{percent})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{esperluet})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{simpleQuote})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{openParenthesis})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{closeParenthesis})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{star})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{plus})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{comma})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{minus})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{point})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{slash})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{zero})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{one})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{two})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{three})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{four})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{five})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{six})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{seven})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{eight})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{nine})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{space}))); // ajout de l'espace
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{colon})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{semicolon})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{lessThan})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{equal})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{greaterThan})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{question})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{arobase})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{AToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{BToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{CToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{DToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{EToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{FToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{GToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{HToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{IToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{JToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{KToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{LToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{MToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{NToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{OToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{PToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{QToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{RToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{SToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{TToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{UToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{VToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{WToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{XToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{YToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{ZToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{openBracket})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{backslash})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{closeBracket})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{circumflex})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{underscore})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{accent})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{aToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{bToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{cToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{dToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{eToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{fToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{gToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{hToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{iToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{jToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{kToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{lToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{mToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{nToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{oToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{pToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{qToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{rToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{sToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{tToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{uToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{vToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{wToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{xToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{yToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{zToken})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{openBrace})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{pipe})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{closeBrace})));
-        grammar.addRule(new Rule(Char, new Expression(new GrammarToken[]{tilde})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{Id0, In1})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{Ent0, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{Char, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{trueToken, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{falseToken, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{nullToken, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{openParenthesis, E0, closeParenthesis, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{not, E0, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{minus, E0, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{newToken, Id0, E1, point, Id0, A1, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{characterToken, accent, val, openParenthesis, E0, closeParenthesis, E1, point, Id0, A1, assign, E0, semicolon}))); // faute dans le excel normalement ligne 213
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{returnToken, E4, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{begin, In0, In3, end})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{ifToken, E0, then, In0, In3, elseifToken, E0, then, In0, In3, El0, end, ifToken, semicolon})));  // les parenthèses ne sont pas des non terminaux
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{forToken, Id0, in, R0, E0, pointPoint, E0, loop, In0, In3, end, loop, semicolon})));
-        grammar.addRule(new Rule(In0, new Expression(new GrammarToken[]{whileToken, E0, loop, In0, In3, end, loop, semicolon})));
-        grammar.addRule(new Rule(El0, new Expression(new GrammarToken[]{elseToken, In0, In3})));
-        grammar.addRule(new Rule(El0, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(R0, new Expression(new GrammarToken[]{reverse})));
-        grammar.addRule(new Rule(R0, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(In1, new Expression(new GrammarToken[]{semicolon})));
-        grammar.addRule(new Rule(In1, new Expression(new GrammarToken[]{point, Id0, A0, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In1, new Expression(new GrammarToken[]{openParenthesis, E0, E2, closeParenthesis, In2})));
-        grammar.addRule(new Rule(In2, new Expression(new GrammarToken[]{E1, point, Id0, A0, assign, E0, semicolon})));
-        grammar.addRule(new Rule(In2, new Expression(new GrammarToken[]{semicolon})));
-
-        // --- modification pour second prédicats ---
-        //              --- optionnel ---
-        grammar.addRule(new Rule(In3, new Expression(new GrammarToken[]{In0, In3})));
-        grammar.addRule(new Rule(In3, new Expression(new GrammarToken[]{})));
-        // fin modif optionnel
-
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{Ent0, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{Char, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{trueToken, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{falseToken, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{nullToken, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{openParenthesis, E0, closeParenthesis, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{Id0, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{not, E0, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{minus, E0, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{newToken, Id0, E1})));
-        grammar.addRule(new Rule(E0, new Expression(new GrammarToken[]{characterToken, accent, val, openParenthesis, E0, closeParenthesis, E1}))); // je crois que j'ai fait une faute dans le excel ici je vérifierai
-
-        // --- prédicat 2 --- ligne 241 - 242 du excel
-        grammar.addRule(new Rule(E1,new Expression(new GrammarToken[]{Op0, E0, E1})));
-        grammar.addRule(new Rule(E1, new Expression(new GrammarToken[]{})));
-        // fin prédicat 2
-
-        grammar.addRule(new Rule(E2, new Expression(new GrammarToken[]{comma, E0, E2})));
-        grammar.addRule(new Rule(E2, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(E3, new Expression(new GrammarToken[]{assign, E0})));
-        grammar.addRule(new Rule(E3, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(E4, new Expression(new GrammarToken[]{E0})));
-        grammar.addRule(new Rule(E4, new Expression(new GrammarToken[]{})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{Id0, A2})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{Ent0, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{Char, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{trueToken, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{falseToken, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{nullToken, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{openParenthesis, E0, closeParenthesis, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{not, E0, E1, point, Id0, A1}))); // à vérifier je crois qu'il y a encore une faute ici dans le excel
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{minus, E0, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{newToken, Id0, E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A0, new Expression(new GrammarToken[]{characterToken, accent, val, openParenthesis, E0, closeParenthesis, E1, point, Id0, A1})));
-
-        // prédicat 3 ligne 259-260 du excel
-        grammar.addRule(new Rule(A1, new Expression(new GrammarToken[]{E1, point, Id0, A1})));
-        grammar.addRule(new Rule(A1, new Expression(new GrammarToken[]{})));
-        // fin prédicat 3
-
-        grammar.addRule(new Rule(A2, new Expression(new GrammarToken[]{point, Id0, A1})));
-        grammar.addRule(new Rule(A2, new Expression(new GrammarToken[]{openParenthesis, E0, E2, closeParenthesis,E1, point, Id0, A1})));
-        grammar.addRule(new Rule(D0, new Expression(new GrammarToken[]{type, Id0, D1})));
-        grammar.addRule(new Rule(D0, new Expression(new GrammarToken[]{Id0, C1, colon, T0, E3, semicolon})));
-        grammar.addRule(new Rule(D0, new Expression(new GrammarToken[]{procedure, Id0, Ps2, semicolon, is, F0, begin, In0, In3, end, Id2, semicolon})));
-        grammar.addRule(new Rule(D0, new Expression(new GrammarToken[]{function, Id0, Ps2, returnToken, T0, is, F1, begin, In0, In3, end, Id2, semicolon})));  // je vais vérifier
-        grammar.addRule(new Rule(D1, new Expression(new GrammarToken[]{semicolon})));
-        grammar.addRule(new Rule(D1, new Expression(new GrammarToken[]{is, D2})));
-        grammar.addRule(new Rule(D2, new Expression(new GrammarToken[]{access, Id0, semicolon})));
-        grammar.addRule(new Rule(D2, new Expression(new GrammarToken[]{record, C0,C2, end, record, semicolon})));
-
-
-        System.out.println(grammar.toString());
-    */
     }
 }
