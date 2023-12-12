@@ -30,7 +30,7 @@ public class GrammarDemo {
                 System.out.println("S -> aSb");
                 lexer.nextToken();
                 S.execute();
-                if (Objects.equals(lexer.getCurrentToken(gi).getValue(), "b")) {
+                if (Objects.equals(lexer.getCurrentToken().getValue(), "b")) {
                     lexer.nextToken();
                 } else {
                     System.out.println("Erreur");
