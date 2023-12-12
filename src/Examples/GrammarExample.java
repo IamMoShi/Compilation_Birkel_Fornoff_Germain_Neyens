@@ -1,4 +1,4 @@
-package Grammar;
+
 
 import Grammar.*;
 import Grammar.Rule.*;
@@ -6,6 +6,7 @@ import Grammar.Token.*;
 
 import java.util.ArrayList;
 
+/*
 public class GrammarExample {
 
     private Grammar grammar;
@@ -16,9 +17,9 @@ public class GrammarExample {
     
     private TerminalToken currentToken;
     
-    public GrammarTest() {
-        grammar = new Grammar();
-    }
+    // public GrammarTest() {
+    //    grammar = new Grammar();
+    //}
     
     public boolean isCurrentToken(TerminalToken token) {
         return currentToken.getType().equals(token.getType());
@@ -32,7 +33,7 @@ public class GrammarExample {
     public static void main(String[] args) {
         // Instanciation de grammar
         Grammar grammar = new Grammar();
-
+*/
 /*
 Voici les rèles de la grammaire :
 
@@ -131,7 +132,7 @@ T0 -> Ident
 T0 -> access Ident
 
 */
-
+/*
         // Définition des tokens non terminaux
         NonTerminalToken F0 = new NonTerminalToken("F0"); //fichier
         NonTerminalToken F1 = new NonTerminalToken("F1");
@@ -376,7 +377,7 @@ T0 -> access Ident
         grammar.addTerminal(procedure);
         grammar.addTerminal(function);
         grammar.addTerminal(use);
-        grammar.addTerminal(with);
+        // grammar.addTerminal(with);
         grammar.addTerminal(nullToken);
         grammar.addTerminal(trueToken);
         grammar.addTerminal(falseToken);
@@ -503,20 +504,21 @@ T0 -> access Ident
         grammar.addTerminal(accessToken);
 
 
-
+        */
         /*
         // Définition des règles
         grammar.addRule(new Rule(F0, new Expression(new GrammarToken[]{with, AdaIOToken, semicolon, use, AdaIOToken, semicolon, procedure, Id0, is, F1, begin, In0, In3, end, Id2, semicolon, end_of_file})));
         grammar.addRule(new Rule(F1, new Expression(new GrammarToken[]{D0, F1})));
         
         */
-        
+        /*
         //on utilise les règles pour définir :
-        grammar.addNonTerminal(F0.setAction(() -> {
-            if (isCurrentToken(withToken)){
+        //grammar.addNonTerminal(F0.setAction(() -> {
+        //    if (isCurrentToken(withToken)){
 
-            }
-        }));
+        //    }
+        //}));
 
     }
 }
+*/

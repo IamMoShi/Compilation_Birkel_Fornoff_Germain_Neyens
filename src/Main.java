@@ -1,3 +1,4 @@
+import Grammar.GrammarDemo;
 import Grammar.GrammarTest;
 import Lexer.FileReaderUtil;
 import Lexer.Lexer;
@@ -13,14 +14,17 @@ public class Main {
         String repertoireCourant = System.getProperty("user.dir");
 
         // Créer le chemin complet du fichier en utilisant le répertoire courant
-        String cheminComplet = repertoireCourant + "/" + "src/Lexer/lexerTextToRead2.txt";
-        System.out.println(cheminComplet);
+        // String cheminComplet = repertoireCourant + "/" + "src/Lexer/lexerTextToRead2.txt";
+        // System.out.println(cheminComplet);
 
-        String sourceCode = FileReaderUtil.lireFichier(cheminComplet);
-        System.out.println(sourceCode);
+        // String sourceCode = FileReaderUtil.lireFichier(cheminComplet);
+        // System.out.println(sourceCode);
 
-        Lexer lexer = new Lexer(sourceCode);
-        lexer.tokenize();
-        lexer.printTokensTypes();
+        // Lexer lexer = new Lexer("a a b b");
+        // lexer.tokenize();
+        // lexer.printTokensTypes();
+
+        GrammarDemo grammarDemo = new GrammarDemo();
+        grammarDemo.demo2("(12 + 2)*3");
     }
 }

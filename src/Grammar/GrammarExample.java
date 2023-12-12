@@ -294,7 +294,7 @@ public class GrammarExample {
         grammar.addTerminal(forToken);
         grammar.addTerminal(in);
         grammar.addTerminal(loop);
-        grammar.addTerminal(endLoop);
+        //grammar.addTerminal(endLoop);
         grammar.addTerminal(whileToken);
         grammar.addTerminal(aToken);
         grammar.addTerminal(bToken);

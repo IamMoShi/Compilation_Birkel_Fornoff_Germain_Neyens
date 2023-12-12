@@ -19,6 +19,8 @@ public class Lexer {
 
     private final ArrayList<TerminalToken> tokens;
 
+    private int tokenPosition;
+
 
 
     /* CONSTRUCTOR -------------------------------------------------------------------------------------------- */
@@ -29,6 +31,7 @@ public class Lexer {
         this.currentChar = ' ';
         this.lineCounter = 1;
         this.tokens = new ArrayList<>();
+        this.tokenPosition = -1;
     }
 
     /* GETTERS AND SETTERS ------------------------------------------------------------------------------------ */
@@ -76,6 +79,45 @@ public class Lexer {
 
     public void newTypeToken(TerminalToken token, String name) {
         token.setType(name);
+    }
+
+    public TerminalToken getCurrentToken() {
+        if (this.tokenPosition >= this.tokens.size()) {
+            throw new IndexOutOfBoundsException("No more tokens");
+        }
+        return this.tokens.get(this.tokenPosition);
+    }
+
+    public TerminalToken getNextToken() {
+        if (this.tokenPosition + 1 >= this.tokens.size()) {
+            throw new IndexOutOfBoundsException("No more tokens");
+        }
+        return this.tokens.get(this.tokenPosition + 1);
+    }
+
+    public void nextToken() {
+
+        this.tokenPosition += 1;
+
+    }
+
+    public List<TerminalToken> getTokens() {
+        return this.tokens;
+    }
+
+    public TerminalToken getPreviousToken() {
+        if (this.tokenPosition - 1 < 0) {
+            throw new IndexOutOfBoundsException("No more tokens");
+        }
+        return this.tokens.get(this.tokenPosition - 1);
+    }
+
+    public int getTokenPosition() {
+        return this.tokenPosition;
+    }
+
+    public boolean stillAvailableToken() {
+        return this.tokenPosition <= this.tokens.size() - 1;
     }
 
     /* ANALYZER METHODS --------------------------------------------------------------------------------------- */
@@ -379,8 +421,9 @@ public class Lexer {
             if (currentPosition == this.positionID) {
                 throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'");
             }
-
         }
+
+        this.tokenPosition = 0;
         return this.tokens;
     }
 }
