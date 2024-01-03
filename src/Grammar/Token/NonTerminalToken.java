@@ -25,7 +25,7 @@ public class NonTerminalToken extends GrammarToken {
         return this.action;
     }
 
-    public Node execute() {
+    public Node execute() throws Exception {
         if (this.action == null) {
             return null;
         }

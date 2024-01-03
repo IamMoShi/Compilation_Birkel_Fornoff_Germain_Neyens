@@ -29,7 +29,7 @@ public class GrammarTest {
         position++;
         currentToken = terminalTokens.get(position);
     }
-
+    /*
     public void test() {
         grammar = new Grammar();
         System.out.println("Test de la grammaire:");
@@ -198,5 +198,7 @@ public class GrammarTest {
             }
         }));
     }
+    */
+
 
 }

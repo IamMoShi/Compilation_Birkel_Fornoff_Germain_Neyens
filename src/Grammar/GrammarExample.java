@@ -408,7 +408,7 @@ public class GrammarExample {
         grammar.addTerminal(Float);
         
         //on utilise les règles pour définir :
-
+        /*
         grammar.addNonTerminal(F0.setAction(() -> {
             if (isCurrentToken(withToken)){
                 nextToken();
@@ -1335,7 +1335,7 @@ public class GrammarExample {
                 }
             }
         }));
-
+    */
     }
 }
 

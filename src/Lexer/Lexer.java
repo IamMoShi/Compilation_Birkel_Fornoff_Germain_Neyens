@@ -238,6 +238,7 @@ public class Lexer {
     private void assignment() {
         if (this.sourceCode.charAt(this.positionID + 1) == '=') {
             this.newTerminalToken(":=", "ASSIGNMENT");
+            this.getNextChar();
         } else {
             newTerminalToken(":", "COLON");
         }

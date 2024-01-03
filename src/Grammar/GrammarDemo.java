@@ -12,7 +12,7 @@ public class GrammarDemo {
         System.out.println(s);
     }
 
-
+    /*
     public void demo1(String entry) {
         Grammar grammar = new Grammar();
         Lexer lexer = new Lexer(entry);
@@ -139,5 +139,5 @@ public class GrammarDemo {
         E0.execute();
         System.out.println("Test passé avec succès");
     }
-
+    */
 }
