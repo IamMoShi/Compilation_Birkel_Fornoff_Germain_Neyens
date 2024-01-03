@@ -1,7 +1,4 @@
 import Grammar.GrammarDemo;
-import Grammar.GrammarTest;
-import Lexer.FileReaderUtil;
-import Lexer.Lexer;
 import Error.LexerError;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
@@ -9,22 +6,12 @@ import Error.LexerError;
 public class Main {
 
 
-    public static void main(String[] args) throws LexerError {
+    public static void main(String[] args) {
         // Obtenir le répertoire de travail courant
-        String repertoireCourant = System.getProperty("user.dir");
+        // String repertoireCourant = System.getProperty("user.dir");
 
-        // Créer le chemin complet du fichier en utilisant le répertoire courant
-        // String cheminComplet = repertoireCourant + "/" + "src/Lexer/lexerTextToRead2.txt";
-        // System.out.println(cheminComplet);
-
-        // String sourceCode = FileReaderUtil.lireFichier(cheminComplet);
-        // System.out.println(sourceCode);
-
-        // Lexer lexer = new Lexer("a a b b");
-        // lexer.tokenize();
-        // lexer.printTokensTypes();
 
         GrammarDemo grammarDemo = new GrammarDemo();
-        grammarDemo.demo2("(12 + 2)*3");
+        grammarDemo.grammar1("with Ada.Text_IO ; use Ada.Text_IO ; procedure unDebut is type maurice is access Leo ; ");
     }
 }

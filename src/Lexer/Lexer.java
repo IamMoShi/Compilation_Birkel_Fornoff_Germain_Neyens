@@ -309,6 +309,17 @@ public class Lexer {
         return word.toString();
     }
 
+
+    public String currentTokenType() {
+        return this.getCurrentToken().getType().getName();
+    }
+
+
+    public String currentTokenValue() {
+        return this.getCurrentToken().getValue();
+    }
+
+
     private String currentInteger() {
         // Check if the current char is a letter or a number or an underscore
         StringBuilder word = new StringBuilder();
