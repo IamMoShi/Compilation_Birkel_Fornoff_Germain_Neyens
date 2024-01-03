@@ -523,9 +523,59 @@ public class GrammarDemo {
             }
         });
 
-        // instructionExpressionAssignment
+        instructionExpressionAssignment.setAction(() -> {
+            if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                lexer.nextToken();
+                expression.execute();
+                expressionCommaPlus.execute();
+                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                    lexer.nextToken();
+                    instructionAssignment.execute();
+                }
+            } else if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                lexer.nextToken();
+                expression.execute();
+                if (lexer.currentTokenType().equals("SEMICOLON")) {
+                    lexer.nextToken();
+                }
+            } else {
+                expressionFollow.execute();
+                if (lexer.currentTokenType().equals("DOT")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                            lexer.nextToken();
+                            expression.execute();
+                            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                lexer.nextToken();
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
-        // instructionAssignment
+        instructionAssignment.setAction(() -> {
+            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                lexer.nextToken();
+            } else {
+                expressionFollow.execute();
+                if (lexer.currentTokenType().equals("DOT")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                            lexer.nextToken();
+                            expression.execute();
+                            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                lexer.nextToken();
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         instructionPlus.setAction(() -> {
             try {
@@ -607,13 +657,40 @@ public class GrammarDemo {
 
         // expressionFact
 
-        // expression0or1
+        expression0or1.setAction(() -> {
+            try {
+                expression.execute();
+            } catch (Exception e) {
+                System.out.println("catch E5");
+            }
+        });
 
-        // elseIf
+        elseIf.setAction(() -> {
+            if (lexer.currentTokenValue().equals("elsif")) {
+                lexer.nextToken();
+                expression.execute();
+                if (lexer.currentTokenValue().equals("then")) {
+                    lexer.nextToken();
+                    instruction.execute();
+                    instructionPlus.execute();
+                    elseIf.execute();
+                }
+            }
+        });
 
-        // else
+        else1.setAction(() -> {
+            if (lexer.currentTokenValue().equals("else")) {
+                lexer.nextToken();
+                instruction.execute();
+                instructionPlus.execute();
+            }
+        });
 
-        // reverse
+        reverse.setAction(() -> {
+            if (lexer.currentTokenValue().equals("reverse")) {
+                lexer.nextToken();
+            }
+        });
 
         type.setAction(() -> {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
@@ -632,17 +709,6 @@ public class GrammarDemo {
                 lexer.nextToken();
             }
         });
-
-
-
-
-
-
-
-
-
-
-
 
 
         axiom.execute();
