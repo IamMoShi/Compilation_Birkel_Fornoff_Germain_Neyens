@@ -65,42 +65,40 @@ public class GrammarDemo {
 
         System.out.println("Test pour la grammaire : grammar1");
 
-        NonTerminalToken E = new NonTerminalToken("E");
-        NonTerminalToken E1 = new NonTerminalToken("E1");
-        NonTerminalToken E2 = new NonTerminalToken("E2");
-        NonTerminalToken E3 = new NonTerminalToken("E3");
-        NonTerminalToken E4 = new NonTerminalToken("E4");
-        NonTerminalToken E5 = new NonTerminalToken("E5");
-        NonTerminalToken D = new NonTerminalToken("D");
-        NonTerminalToken D1 = new NonTerminalToken("D1");
-        NonTerminalToken D2 = new NonTerminalToken("D2");
-        NonTerminalToken F = new NonTerminalToken("F");
-        NonTerminalToken F1 = new NonTerminalToken("F1");
-        NonTerminalToken C = new NonTerminalToken("C");
-        NonTerminalToken C1 = new NonTerminalToken("C1");
-        NonTerminalToken C2 = new NonTerminalToken("C2");
-        NonTerminalToken In = new NonTerminalToken("In");
-        NonTerminalToken In1 = new NonTerminalToken("In1");
-        NonTerminalToken In2 = new NonTerminalToken("In2");
-        NonTerminalToken In3 = new NonTerminalToken("In3");
-        NonTerminalToken In4 = new NonTerminalToken("In4");
-        NonTerminalToken In5 = new NonTerminalToken("In5");
-        NonTerminalToken Eif = new NonTerminalToken("Eif");
-        NonTerminalToken Ei = new NonTerminalToken("Ei");
-        NonTerminalToken R1 = new NonTerminalToken("R1");
-        NonTerminalToken M = new NonTerminalToken("M");
-        NonTerminalToken M1 = new NonTerminalToken("M1");
-        NonTerminalToken M2 = new NonTerminalToken("M2");
-        NonTerminalToken PS = new NonTerminalToken("PS");
-        NonTerminalToken PS1 = new NonTerminalToken("PS1");
-        NonTerminalToken PS2 = new NonTerminalToken("PS2");
-        NonTerminalToken P = new NonTerminalToken("P");
-        NonTerminalToken P1 = new NonTerminalToken("P1");
-        NonTerminalToken Ident2 = new NonTerminalToken("Ident2");
-        NonTerminalToken T = new NonTerminalToken("T");
+        NonTerminalToken expression = new NonTerminalToken("E");
+        NonTerminalToken expressionFollow = new NonTerminalToken("E1"); // E1
+        NonTerminalToken expressionCommaPlus = new NonTerminalToken("E2");
+        NonTerminalToken expressionAssignment = new NonTerminalToken("E3");
+        NonTerminalToken expressionFact = new NonTerminalToken("E4"); // E4
+        NonTerminalToken expression0or1 = new NonTerminalToken("E5"); // E5
+        NonTerminalToken declaration = new NonTerminalToken("D");
+        NonTerminalToken declarationFact1 = new NonTerminalToken("D1");
+        NonTerminalToken declarationFact2 = new NonTerminalToken("D2");
+        NonTerminalToken axiom = new NonTerminalToken("F");
+        NonTerminalToken declarationStar = new NonTerminalToken("F1");
+        NonTerminalToken field = new NonTerminalToken("C");
+        NonTerminalToken identificatorCommaPlus = new NonTerminalToken("C1");
+        NonTerminalToken fieldPlus = new NonTerminalToken("C2");
+        NonTerminalToken instruction = new NonTerminalToken("In");
+        NonTerminalToken In2 = new NonTerminalToken("In2"); // JAMAIS APPELE A REVOIR
+        NonTerminalToken instructionPlus = new NonTerminalToken("In3");
+        NonTerminalToken instructionExpressionAssignment = new NonTerminalToken("In4"); // In4
+        NonTerminalToken instructionAssignment = new NonTerminalToken("In5");
+        NonTerminalToken elseIf = new NonTerminalToken("Eif"); // Eif
+        NonTerminalToken else1 = new NonTerminalToken("Ei"); // Ei
+        NonTerminalToken reverse = new NonTerminalToken("R1"); // R1
+        NonTerminalToken method = new NonTerminalToken("M");
+        NonTerminalToken methodFact = new NonTerminalToken("M1");
+        NonTerminalToken method0or1 = new NonTerminalToken("M2");
+        NonTerminalToken parameters = new NonTerminalToken("PS");
+        NonTerminalToken parametersSemicolonPlus = new NonTerminalToken("PS1");
+        NonTerminalToken parameters0or1 = new NonTerminalToken("PS2");
+        NonTerminalToken parameter = new NonTerminalToken("P");
+        NonTerminalToken identificator0or1 = new NonTerminalToken("Ident2");
+        NonTerminalToken type = new NonTerminalToken("T");
 
 
-        F.setAction(() -> {
+        axiom.setAction(() -> {
             if (lexer.getCurrentToken().getValue().equals("with") && lexer.getCurrentToken().getType().getName().equals("KEYWORD")) {
                 lexer.nextToken();
                 if (lexer.getCurrentToken().getValue().equals("Ada")) {
@@ -127,7 +125,7 @@ public class GrammarDemo {
                                                             lexer.nextToken();
                                                             if (lexer.getCurrentToken().getType().getName().equals("KEYWORD") && lexer.getCurrentToken().getValue().equals("is")) {
                                                                 lexer.nextToken();
-                                                                F1.execute();
+                                                                declarationStar.execute();
                                                             }
                                                         }
                                                     }
@@ -143,11 +141,11 @@ public class GrammarDemo {
             }
         });
 
-        F1.setAction(() -> {
+        declarationStar.setAction(() -> {
             // Try to do rules D and F1 else do nothing
             try {
-                D.execute();
-                F1.execute();
+                declaration.execute();
+                declarationStar.execute();
                 return;
             } catch (Exception e) {
                 System.out.println("catch F1");
@@ -156,20 +154,20 @@ public class GrammarDemo {
 
         });
 
-        D.setAction(() -> {
+        declaration.setAction(() -> {
             if (lexer.currentTokenType().equals("KEYWORD") && lexer.getCurrentToken().getValue().equals("type")) {
                 lexer.nextToken();
                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
                     lexer.nextToken();
-                    D1.execute();
+                    declarationFact1.execute();
                 }
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 lexer.nextToken();
-                C1.execute();
+                identificatorCommaPlus.execute();
                 if (lexer.currentTokenType().equals("COLON")) {
                     lexer.nextToken();
-                    T.execute();
-                    E3.execute();
+                    type.execute();
+                    expressionAssignment.execute();
                     if (lexer.currentTokenType().equals("SEMICOLON")) {
                         lexer.nextToken();
                     }
@@ -178,17 +176,17 @@ public class GrammarDemo {
                 lexer.nextToken();
                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
                     lexer.nextToken();
-                    PS2.execute();
+                    parameters0or1.execute();
                     if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("is")) {
                         lexer.nextToken();
-                        F1.execute();
+                        declarationStar.execute();
                         if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("begin")) {
                             lexer.nextToken();
-                            In.execute();
-                            In3.execute();
+                            instruction.execute();
+                            instructionPlus.execute();
                             if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("end")) {
                                 lexer.nextToken();
-                                Ident2.execute();
+                                identificator0or1.execute();
                                 if (lexer.currentTokenType().equals("SEMICOLON")) {
                                     lexer.nextToken();
                                 }
@@ -200,20 +198,20 @@ public class GrammarDemo {
                 lexer.nextToken();
                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
                     lexer.nextToken();
-                    PS2.execute();
+                    parameters0or1.execute();
                     if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("return")) {
                         lexer.nextToken();
-                        T.execute();
+                        type.execute();
                         if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("is")) {
                             lexer.nextToken();
-                            F1.execute();
+                            declarationStar.execute();
                             if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("begin")) {
                                 lexer.nextToken();
-                                In.execute();
-                                In3.execute();
+                                instruction.execute();
+                                instructionPlus.execute();
                                 if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("end")) {
                                     lexer.nextToken();
-                                    Ident2.execute();
+                                    identificator0or1.execute();
                                     if (lexer.currentTokenType().equals("SEMICOLON")) {
                                         lexer.nextToken();
                                     }
@@ -227,18 +225,18 @@ public class GrammarDemo {
             }
         });
 
-        D1.setAction(() -> {
+        declarationFact1.setAction(() -> {
             if (lexer.currentTokenType().equals("SEMICOLON")) {
                 lexer.nextToken();
             } else if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("is")) {
                 lexer.nextToken();
-                D2.execute();
+                declarationFact2.execute();
             } else {
                 throw new RuntimeException("D1");
             }
         });
 
-        D2.setAction(() -> {
+        declarationFact2.setAction(() -> {
             if (lexer.currentTokenValue().equals("access")) {
                 lexer.nextToken();
                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
@@ -249,8 +247,8 @@ public class GrammarDemo {
                     }
                 }
             } else if (lexer.currentTokenValue().equals("record")) {
-                C.execute();
-                C2.execute();
+                field.execute();
+                fieldPlus.execute();
                 if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("end")) {
                     lexer.nextToken();
                     if (lexer.currentTokenType().equals("SEMICOLON")) {
@@ -260,14 +258,13 @@ public class GrammarDemo {
             }
         });
 
-
-        C.setAction(() -> {
+        field.setAction(() -> {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 lexer.nextToken();
-                C1.execute();
+                identificatorCommaPlus.execute();
                 if (lexer.currentTokenType().equals("COLON")) {
                     lexer.nextToken();
-                    T.execute();
+                    type.execute();
                     if (lexer.currentTokenType().equals("SEMICOLON")) {
                         lexer.nextToken();
                     }
@@ -277,54 +274,88 @@ public class GrammarDemo {
             }
         });
 
-        C1.setAction(() -> {
+        identificatorCommaPlus.setAction(() -> {
             if (lexer.currentTokenType().equals("COMMA")) {
                 lexer.nextToken();
                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
                     lexer.nextToken();
-                    C1.execute();
+                    identificatorCommaPlus.execute();
                 }
             }
         });
 
-        C2.setAction(() -> {
+        fieldPlus.setAction(() -> {
             try {
-                C.execute();
-                C2.execute();
+                field.execute();
+                fieldPlus.execute();
             } catch (Exception e) {
                 System.out.println("catch C2");
             }
         });
 
-        T.setAction(() -> {
-            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+        method.setAction(() -> {
+            if (lexer.currentTokenValue().equals("in")) {
                 lexer.nextToken();
-            } else if (lexer.currentTokenValue().equals("access")) {
-                lexer.nextToken();
-            } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                lexer.nextToken();
-            } else {
-                throw new RuntimeException("T");
+                methodFact.execute();
             }
         });
 
-
-        E3.setAction(() -> {
-            if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+        methodFact.setAction(() -> {
+            if (lexer.currentTokenValue().equals("out")) {
                 lexer.nextToken();
-                E.execute();
             }
         });
 
-        PS2.setAction(() -> {
+        method0or1.setAction(() -> {
             try {
-                PS.execute();
+                method.execute();
+            } catch (Exception e) {
+                System.out.println("catch M2");
+            }
+        });
+
+        // OPERATOR
+
+        parameters.setAction(() -> {
+            if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                lexer.nextToken();
+                parameter.execute();
+                parametersSemicolonPlus.execute();
+                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                    lexer.nextToken();
+                }
+            }
+        });
+
+        parametersSemicolonPlus.setAction(() -> {
+            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                lexer.nextToken();
+                parameter.execute();
+                parametersSemicolonPlus.execute();
+            }
+        });
+
+        parameters0or1.setAction(() -> {
+            try {
+                parameters.execute();
             } catch (Exception e) {
                 System.out.println("catch PS2");
             }
         });
 
-        In.setAction(() -> {
+        parameter.setAction(() -> {
+            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+                identificatorCommaPlus.execute();
+                if (lexer.currentTokenType().equals("COLON")) {
+                    lexer.nextToken();
+                    method0or1.execute();
+                    type.execute();
+                }
+            }
+        });
+
+        instruction.setAction(() -> {
             boolean goodToken;
             boolean goodToken2;
             goodToken = lexer.currentTokenType().equals("CHARACTER");
@@ -342,16 +373,16 @@ public class GrammarDemo {
             if (goodToken || goodToken2) {
                 lexer.nextToken();
                 if (goodToken2) {
-                    E.execute();
+                    expression.execute();
                 }
-                E1.execute();
+                expressionFollow.execute();
                 if (lexer.currentTokenType().equals("DOT")) {
                     lexer.nextToken();
                     if (lexer.currentTokenType().equals("IDENTIFIER")) {
                         lexer.nextToken();
                         if (lexer.currentTokenType().equals("ASSIGNMENT")) {
                             lexer.nextToken();
-                            E.execute();
+                            expression.execute();
                             if (lexer.currentTokenType().equals("SEMICOLON")) {
                                 lexer.nextToken();
                             }
@@ -360,17 +391,17 @@ public class GrammarDemo {
                 }
             } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 lexer.nextToken();
-                E.execute();
+                expression.execute();
                 if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
                     lexer.nextToken();
-                    E1.execute();
+                    expressionFollow.execute();
                     if (lexer.currentTokenType().equals("DOT")) {
                         lexer.nextToken();
                         if (lexer.currentTokenType().equals("IDENTIFIER")) {
                             lexer.nextToken();
                             if (lexer.currentTokenType().equals("ASSIGNMENT")) {
                                 lexer.nextToken();
-                                E.execute();
+                                expression.execute();
                                 if (lexer.currentTokenType().equals("SEMICOLON")) {
                                     lexer.nextToken();
                                 }
@@ -384,17 +415,17 @@ public class GrammarDemo {
                     lexer.nextToken();
                     if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                         lexer.nextToken();
-                        E.execute();
+                        expression.execute();
                         if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
                             lexer.nextToken();
-                            E1.execute();
+                            expressionFollow.execute();
                             if (lexer.currentTokenType().equals("DOT")) {
                                 lexer.nextToken();
                                 if (lexer.currentTokenType().equals("IDENTIFIER")) {
                                     lexer.nextToken();
                                     if (lexer.currentTokenType().equals("ASSIGNMENT")) {
                                         lexer.nextToken();
-                                        E.execute();
+                                        expression.execute();
                                         if (lexer.currentTokenType().equals("SEMICOLON")) {
                                             lexer.nextToken();
                                         }
@@ -406,15 +437,15 @@ public class GrammarDemo {
                 }
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 lexer.nextToken();
-                In4.execute();
+                instructionExpressionAssignment.execute();
             } else if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("return")) {
-                E5.execute();
+                expression0or1.execute();
                 if (lexer.currentTokenType().equals("SEMICOLON")) {
                     lexer.nextToken();
                 }
             } else if (lexer.currentTokenValue().equals("begin")) {
                 lexer.nextToken();
-                In3.execute();
+                instructionPlus.execute();
                 if (lexer.currentTokenValue().equals("end")) {
                     lexer.nextToken();
                     if (lexer.currentTokenType().equals("SEMICOLON")) {
@@ -423,13 +454,13 @@ public class GrammarDemo {
                 }
             } else if (lexer.currentTokenValue().equals("if")) {
                 lexer.nextToken();
-                E.execute();
+                expression.execute();
                 if (lexer.currentTokenValue().equals("then")) {
                     lexer.nextToken();
-                    In.execute();
-                    In3.execute();
-                    Eif.execute();
-                    Ei.execute();
+                    instruction.execute();
+                    instructionPlus.execute();
+                    elseIf.execute();
+                    else1.execute();
 
                     if (lexer.currentTokenValue().equals("end")) {
                         lexer.nextToken();
@@ -447,15 +478,15 @@ public class GrammarDemo {
                     lexer.nextToken();
                     if (lexer.currentTokenValue().equals("in")) {
                         lexer.nextToken();
-                        R1.execute();
-                        E.execute();
+                        reverse.execute();
+                        expression.execute();
                         if (lexer.currentTokenType().equals("DOUBLE_DOT")) {
                             lexer.nextToken();
-                            E.execute();
+                            expression.execute();
                             if (lexer.currentTokenValue().equals("loop")) {
                                 lexer.nextToken();
-                                In.execute();
-                                In3.execute();
+                                instruction.execute();
+                                instructionPlus.execute();
                                 if (lexer.currentTokenValue().equals("end")) {
                                     lexer.nextToken();
                                     if (lexer.currentTokenValue().equals("loop")) {
@@ -472,11 +503,11 @@ public class GrammarDemo {
                 }
             } else if (lexer.currentTokenValue().equals("while")) {
                 lexer.nextToken();
-                E.execute();
+                expression.execute();
                 if (lexer.currentTokenValue().equals("loop")) {
                     lexer.nextToken();
-                    In.execute();
-                    In3.execute();
+                    instruction.execute();
+                    instructionPlus.execute();
                     if (lexer.currentTokenValue().equals("end")) {
                         lexer.nextToken();
                         if (lexer.currentTokenValue().equals("loop")) {
@@ -492,22 +523,20 @@ public class GrammarDemo {
             }
         });
 
-        In3.setAction(() -> {
+        // instructionExpressionAssignment
+
+        // instructionAssignment
+
+        instructionPlus.setAction(() -> {
             try {
-                In.execute();
-                In3.execute();
+                instruction.execute();
+                instructionPlus.execute();
             } catch (Exception e) {
                 System.out.println("catch In3");
             }
         });
 
-        Ident2.setAction(() -> {
-            if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                lexer.nextToken();
-            }
-        });
-
-        E.setAction(() -> {
+        expression.setAction(() -> {
             boolean goodToken;
             boolean goodToken2;
 
@@ -525,15 +554,15 @@ public class GrammarDemo {
             if (goodToken || goodToken2) {
                 lexer.nextToken();
                 if (goodToken2) {
-                    E.execute();
+                    expression.execute();
                 }
-                E1.execute();
+                expressionFollow.execute();
             } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 lexer.nextToken();
-                E.execute();
+                expression.execute();
                 if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
                     lexer.nextToken();
-                    E1.execute();
+                    expressionFollow.execute();
                 }
             } else if (lexer.currentTokenValue().equals("character")) {
                 lexer.nextToken();
@@ -543,30 +572,80 @@ public class GrammarDemo {
                         lexer.nextToken();
                         if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                             lexer.nextToken();
-                            E.execute();
+                            expression.execute();
                             if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
                                 lexer.nextToken();
-                                E1.execute();
+                                expressionFollow.execute();
                             }
                         }
                     }
                 }
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 lexer.nextToken();
-                E4.execute();
+                expressionFact.execute();
             } else {
                 throw new RuntimeException("E");
             }
         });
 
+        // expressionFollow
 
-        PS.setAction(() -> {
+        expressionCommaPlus.setAction(() -> {
+            if (lexer.currentTokenType().equals("COMMAT")) {
+                lexer.nextToken();
+                expression.execute();
+                expressionCommaPlus.execute();
+            }
+        });
 
+        expressionAssignment.setAction(() -> {
+            if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                lexer.nextToken();
+                expression.execute();
+            }
+        });
+
+        // expressionFact
+
+        // expression0or1
+
+        // elseIf
+
+        // else
+
+        // reverse
+
+        type.setAction(() -> {
+            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            } else if (lexer.currentTokenValue().equals("access")) {
+                lexer.nextToken();
+            } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            } else {
+                throw new RuntimeException("T");
+            }
+        });
+
+        identificator0or1.setAction(() -> {
+            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            }
         });
 
 
 
-        F.execute();
+
+
+
+
+
+
+
+
+
+
+        axiom.execute();
         System.out.println("Test passé avec succès");
 
 
