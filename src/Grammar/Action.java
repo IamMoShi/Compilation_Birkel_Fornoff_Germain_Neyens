@@ -1,5 +1,5 @@
 package Grammar;
 
 public interface Action {
-    public void execute();
+    public Node execute();
 }

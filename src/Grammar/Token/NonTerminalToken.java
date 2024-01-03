@@ -1,6 +1,7 @@
 package Grammar.Token;
 
 import Grammar.Action;
+import Grammar.Node;
 
 import java.util.ArrayList;
 
@@ -24,11 +25,11 @@ public class NonTerminalToken extends GrammarToken {
         return this.action;
     }
 
-    public void execute() {
+    public Node execute() {
         if (this.action == null) {
-            return;
+            return null;
         }
-        this.action.execute();
+        return this.action.execute();
     }
 
     public ArrayList<NonTerminalToken> getNonTerminalValues() {
