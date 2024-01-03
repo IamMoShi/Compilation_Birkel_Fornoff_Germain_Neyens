@@ -69,6 +69,8 @@ public class GrammarDemo {
         NonTerminalToken E1 = new NonTerminalToken("E1");
         NonTerminalToken E2 = new NonTerminalToken("E2");
         NonTerminalToken E3 = new NonTerminalToken("E3");
+        NonTerminalToken E4 = new NonTerminalToken("E4");
+        NonTerminalToken E5 = new NonTerminalToken("E5");
         NonTerminalToken D = new NonTerminalToken("D");
         NonTerminalToken D1 = new NonTerminalToken("D1");
         NonTerminalToken D2 = new NonTerminalToken("D2");
@@ -85,7 +87,7 @@ public class GrammarDemo {
         NonTerminalToken In5 = new NonTerminalToken("In5");
         NonTerminalToken Eif = new NonTerminalToken("Eif");
         NonTerminalToken Ei = new NonTerminalToken("Ei");
-        NonTerminalToken r1 = new NonTerminalToken("r1");
+        NonTerminalToken R1 = new NonTerminalToken("R1");
         NonTerminalToken M = new NonTerminalToken("M");
         NonTerminalToken M1 = new NonTerminalToken("M1");
         NonTerminalToken M2 = new NonTerminalToken("M2");
@@ -276,22 +278,292 @@ public class GrammarDemo {
         });
 
         C1.setAction(() -> {
+            if (lexer.currentTokenType().equals("COMMA")) {
+                lexer.nextToken();
+                if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                    lexer.nextToken();
+                    C1.execute();
+                }
+            }
+        });
+
+        C2.setAction(() -> {
+            try {
+                C.execute();
+                C2.execute();
+            } catch (Exception e) {
+                System.out.println("catch C2");
+            }
+        });
+
+        T.setAction(() -> {
+            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            } else if (lexer.currentTokenValue().equals("access")) {
+                lexer.nextToken();
+            } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            } else {
+                throw new RuntimeException("T");
+            }
+        });
+
+
+        E3.setAction(() -> {
+            if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                lexer.nextToken();
+                E.execute();
+            }
+        });
+
+        PS2.setAction(() -> {
+            try {
+                PS.execute();
+            } catch (Exception e) {
+                System.out.println("catch PS2");
+            }
+        });
+
+        In.setAction(() -> {
+            boolean goodToken;
+            boolean goodToken2;
+            goodToken = lexer.currentTokenType().equals("CHARACTER");
+            goodToken = goodToken || lexer.currentTokenType().equals("INTEGER");
+            goodToken = goodToken || lexer.currentTokenType().equals("IDENTIFIER");
+            goodToken = goodToken || lexer.currentTokenValue().equals("True");
+            goodToken = goodToken || lexer.currentTokenValue().equals("False");
+            goodToken = goodToken || lexer.currentTokenValue().equals("null");
+            goodToken = goodToken || lexer.currentTokenValue().equals("float");
+
+            goodToken2 = lexer.currentTokenValue().equals("not");
+            goodToken2 = goodToken2 || lexer.currentTokenValue().equals("new");
+            goodToken2 = goodToken2 || lexer.currentTokenType().equals("MINUS");
+
+            if (goodToken || goodToken2) {
+                lexer.nextToken();
+                if (goodToken2) {
+                    E.execute();
+                }
+                E1.execute();
+                if (lexer.currentTokenType().equals("DOT")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                            lexer.nextToken();
+                            E.execute();
+                            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                lexer.nextToken();
+                            }
+                        }
+                    }
+                }
+            } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                lexer.nextToken();
+                E.execute();
+                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                    lexer.nextToken();
+                    E1.execute();
+                    if (lexer.currentTokenType().equals("DOT")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                            lexer.nextToken();
+                            if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                                lexer.nextToken();
+                                E.execute();
+                                if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                    lexer.nextToken();
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (lexer.currentTokenValue().equals("character")) {
+                lexer.nextToken();
+                if (lexer.currentTokenType().equals("APOSTROPHE")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                        lexer.nextToken();
+                        E.execute();
+                        if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                            lexer.nextToken();
+                            E1.execute();
+                            if (lexer.currentTokenType().equals("DOT")) {
+                                lexer.nextToken();
+                                if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                                    lexer.nextToken();
+                                    if (lexer.currentTokenType().equals("ASSIGNMENT")) {
+                                        lexer.nextToken();
+                                        E.execute();
+                                        if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                            lexer.nextToken();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+                In4.execute();
+            } else if (lexer.currentTokenType().equals("KEYWORD") && lexer.currentTokenValue().equals("return")) {
+                E5.execute();
+                if (lexer.currentTokenType().equals("SEMICOLON")) {
+                    lexer.nextToken();
+                }
+            } else if (lexer.currentTokenValue().equals("begin")) {
+                lexer.nextToken();
+                In3.execute();
+                if (lexer.currentTokenValue().equals("end")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenType().equals("SEMICOLON")) {
+                        lexer.nextToken();
+                    }
+                }
+            } else if (lexer.currentTokenValue().equals("if")) {
+                lexer.nextToken();
+                E.execute();
+                if (lexer.currentTokenValue().equals("then")) {
+                    lexer.nextToken();
+                    In.execute();
+                    In3.execute();
+                    Eif.execute();
+                    Ei.execute();
+
+                    if (lexer.currentTokenValue().equals("end")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenValue().equals("if")) {
+                            lexer.nextToken();
+                            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                lexer.nextToken();
+                            }
+                        }
+                    }
+                }
+            } else if (lexer.currentTokenValue().equals("for")) {
+                lexer.nextToken();
+                if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenValue().equals("in")) {
+                        lexer.nextToken();
+                        R1.execute();
+                        E.execute();
+                        if (lexer.currentTokenType().equals("DOUBLE_DOT")) {
+                            lexer.nextToken();
+                            E.execute();
+                            if (lexer.currentTokenValue().equals("loop")) {
+                                lexer.nextToken();
+                                In.execute();
+                                In3.execute();
+                                if (lexer.currentTokenValue().equals("end")) {
+                                    lexer.nextToken();
+                                    if (lexer.currentTokenValue().equals("loop")) {
+                                        lexer.nextToken();
+                                        if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                            lexer.nextToken();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            } else if (lexer.currentTokenValue().equals("while")) {
+                lexer.nextToken();
+                E.execute();
+                if (lexer.currentTokenValue().equals("loop")) {
+                    lexer.nextToken();
+                    In.execute();
+                    In3.execute();
+                    if (lexer.currentTokenValue().equals("end")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenValue().equals("loop")) {
+                            lexer.nextToken();
+                            if (lexer.currentTokenType().equals("SEMICOLON")) {
+                                lexer.nextToken();
+                            }
+                        }
+                    }
+                }
+            } else {
+                throw new RuntimeException("In");
+            }
+        });
+
+        In3.setAction(() -> {
+            try {
+                In.execute();
+                In3.execute();
+            } catch (Exception e) {
+                System.out.println("catch In3");
+            }
+        });
+
+        Ident2.setAction(() -> {
+            if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+            }
+        });
+
+        E.setAction(() -> {
+            boolean goodToken;
+            boolean goodToken2;
+
+            goodToken = lexer.currentTokenType().equals("CHARACTER");
+            goodToken = goodToken || lexer.currentTokenType().equals("INTEGER");
+            goodToken = goodToken || lexer.currentTokenValue().equals("True");
+            goodToken = goodToken || lexer.currentTokenValue().equals("False");
+            goodToken = goodToken || lexer.currentTokenValue().equals("null");
+            goodToken = goodToken || lexer.currentTokenType().equals("FLOAT");
+
+            goodToken2 = lexer.currentTokenValue().equals("not");
+            goodToken2 = goodToken2 || lexer.currentTokenValue().equals("new");
+            goodToken2 = goodToken2 || lexer.currentTokenType().equals("MINUS");
+
+            if (goodToken || goodToken2) {
+                lexer.nextToken();
+                if (goodToken2) {
+                    E.execute();
+                }
+                E1.execute();
+            } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                lexer.nextToken();
+                E.execute();
+                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                    lexer.nextToken();
+                    E1.execute();
+                }
+            } else if (lexer.currentTokenValue().equals("character")) {
+                lexer.nextToken();
+                if (lexer.currentTokenType().equals("APOSTROPHE")) {
+                    lexer.nextToken();
+                    if (lexer.currentTokenValue().equals("val")) {
+                        lexer.nextToken();
+                        if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
+                            lexer.nextToken();
+                            E.execute();
+                            if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
+                                lexer.nextToken();
+                                E1.execute();
+                            }
+                        }
+                    }
+                }
+            } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
+                lexer.nextToken();
+                E4.execute();
+            } else {
+                throw new RuntimeException("E");
+            }
+        });
+
+
+        PS.setAction(() -> {
 
         });
-        C2.setAction(() -> {
-        });
-        T.setAction(() -> {
-        });
-        E3.setAction(() -> {
-        });
-        PS2.setAction(() -> {
-        });
-        In.setAction(() -> {
-        });
-        In3.setAction(() -> {
-        });
-        Ident2.setAction(() -> {
-        });
+
 
 
         F.execute();
