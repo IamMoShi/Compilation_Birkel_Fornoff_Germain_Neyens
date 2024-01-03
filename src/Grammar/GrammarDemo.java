@@ -26,8 +26,6 @@ public class GrammarDemo {
         System.out.println("Test pour la grammaire : a^(n)b^(n)");
 
         NonTerminalToken S = new NonTerminalToken("S");
-        TerminalToken a = new TerminalToken("a");
-        TerminalToken b = new TerminalToken("b");
 
         grammar.addNonTerminal(S.setAction(() -> {
             if (Objects.equals(lexer.getCurrentToken().getValue(), "a")) {
