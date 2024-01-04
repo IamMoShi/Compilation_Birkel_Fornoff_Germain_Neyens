@@ -360,12 +360,43 @@ public class Lexer {
         return "";
     }
 
+
     private void isInteger() {
         // Catch the current word and check if it is a keyword (enum Keywords)
+        int position = this.positionID;
         String word = this.currentInteger();
         if (!word.isEmpty()) {
             this.newTerminalToken(word, "INTEGER");
         }
+        this.positionID = position;
+    }
+
+    private void isNumber() {
+        StringBuilder word = new StringBuilder();
+        while (Character.isDigit(this.currentChar)) {
+            word.append(this.currentChar);
+            this.getNextChar();
+        }
+
+        if (this.currentChar == '.' && !word.isEmpty()) {
+            word.append(this.currentChar);
+            this.getNextChar();
+        } else if (!word.isEmpty()) {
+            this.newTerminalToken(word.toString(), "INTEGER");
+            return;
+        } else {
+            return;
+        }
+
+        while (Character.isDigit(this.currentChar)) {
+            word.append(this.currentChar);
+            this.getNextChar();
+        }
+
+        if (word.length() > 1) {
+            this.newTerminalToken(word.toString(), "FLOAT");
+        }
+
     }
 
     private void isFloat() {
@@ -421,11 +452,8 @@ public class Lexer {
             // String Ada ********************************************************************************
             this.isString();
 
-            // Integer Ada *******************************************************************************
-            this.isInteger();
-
             // Float Ada *******************************************************************************
-            this.isFloat();
+            this.isNumber();
 
             // KEYWORDS Ada *****************************************************************************
             this.isKeyword();

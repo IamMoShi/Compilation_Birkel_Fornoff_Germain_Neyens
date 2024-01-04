@@ -6,8 +6,30 @@ import Lexer.Lexer;
 
 public class AdaGrammar {
 
-    public void print(String s) {
+    private void print(String s) {
         System.out.println("---" + s);
+    }
+
+    private void valueTest(Node node, Lexer lexer, String value) {
+        if (!(lexer.getCurrentToken().getValue().equals(value))) {
+            node.setFailed(true);
+            node.addFailedExplanation("Expected '" + value);
+        } else {
+            node.addChild(new Node(lexer.getCurrentToken().getValue()));
+            lexer.nextToken();
+        }
+        print(value);
+    }
+
+    private void typeTest(Node node, Lexer lexer, String type) {
+        if (!(lexer.getCurrentToken().getType().getName().equals(type))) {
+            node.setFailed(true);
+            node.addFailedExplanation("Expected '" + type);
+        } else {
+            node.addChild(new Node(lexer.getCurrentToken().getValue()));
+            lexer.nextToken();
+        }
+        print(type);
     }
 
     public void grammar1(String entry) throws Exception {
@@ -60,177 +82,38 @@ public class AdaGrammar {
         NonTerminalToken operator = new NonTerminalToken("Op");
 
 
+
+
         axiom.setAction(() -> {
             System.out.println("axiom");
-            Node node = new Node("F -> with Ada.Text_IO; use Ada.Text_IO; ...");
+            Node node = new Node("axiom -> with Ada.Text_IO; use Ada.Text_IO; ...");
 
-            if (!(lexer.getCurrentToken().getValue().equals("with") && lexer.getCurrentToken().getType().getName().equals("KEYWORD"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'with' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("with");
-
-            if (!(lexer.getCurrentToken().getValue().equals("Ada"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'Ada' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("Ada");
-
-            if (!(lexer.getCurrentToken().getType().getName().equals("DOT"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected '.'");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print(".");
-
-            if (!(lexer.getCurrentToken().getValue().equals("Text_IO"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'Text_IO' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("Text_IO");
-
-            if (!(lexer.getCurrentToken().getType().getName().equals("SEMICOLON"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected ';'");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print(";");
-
-            if (!(lexer.getCurrentToken().getValue().equals("use"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'use' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("use");
-
-            if (!(lexer.getCurrentToken().getValue().equals("Ada"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'Ada' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("Ada");
-
-            if (!(lexer.getCurrentToken().getType().getName().equals("DOT"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected '.'");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print(".");
-
-            if (!(lexer.getCurrentToken().getValue().equals("Text_IO"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'Text_IO' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("Text_IO");
-
-            if (!(lexer.getCurrentToken().getType().getName().equals("SEMICOLON"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected ';'");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print(";");
-
-            if (!(lexer.getCurrentToken().getValue().equals("procedure"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'procedure' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("procedure");
-
-            if (!(lexer.getCurrentToken().getType().getName().equals("IDENTIFIER"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected an identifier");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("IDENTIFIER");
-
-            if (!(lexer.currentTokenValue().equals("is"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'is' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("is");
-
+            valueTest(node, lexer, "with");
+            valueTest(node, lexer, "Ada");
+            typeTest(node, lexer, "DOT");
+            valueTest(node, lexer, "Text_IO");
+            typeTest(node, lexer, "SEMICOLON");
+            valueTest(node, lexer, "use");
+            valueTest(node, lexer, "Ada");
+            typeTest(node, lexer, "DOT");
+            valueTest(node, lexer, "Text_IO");
+            typeTest(node, lexer, "SEMICOLON");
+            valueTest(node, lexer, "procedure");
+            typeTest(node, lexer, "IDENTIFIER");
+            valueTest(node, lexer, "is");
+            //
             node.addChild(declarationStar.execute());
-
-            if (!(lexer.currentTokenValue().equals("begin"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'begin' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("begin");
-
+            //
+            valueTest(node, lexer, "begin");
+            //
             node.addChild(instruction.execute());
-
             node.addChild(instructionPlus.execute());
-
-            if (!(lexer.currentTokenValue().equals("end"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected 'end' keyword");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print("end");
-
+            //
+            valueTest(node, lexer, "end");
+            //
             node.addChild(identificator0or1.execute());
-
-            if (!(lexer.currentTokenType().equals("SEMICOLON"))) {
-                node.setFailed(true);
-                node.addFailedExplanation("Expected ';'");
-            } else {
-                node.addChild(new Node(lexer.getCurrentToken().getValue()));
-                lexer.nextToken();
-            }
-
-            print(";");
+            //
+            typeTest(node, lexer, "SEMICOLON");
 
             return node;
         });
@@ -321,64 +204,24 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "IDENTIFIER");
 
                 node.addChild(parameters0or1.execute());
 
-                if (!lexer.currentTokenValue().equals("is")) {
-                    print("Error is");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'is' keyword");
-                } else {
-                    print("is");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "is");
 
                 node.addChild(declarationStar.execute());
 
-                if (!lexer.currentTokenValue().equals("begin")) {
-                    print("Error begin");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'begin' keyword");
-                } else {
-                    print("begin");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "begin");
 
                 node.addChild(instruction.execute());
                 node.addChild(instructionPlus.execute());
 
-                if (!lexer.currentTokenValue().equals("end")) {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                } else {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "end");
 
                 node.addChild(identificator0or1.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "SEMICOLON");
 
                 return node;
 
@@ -388,76 +231,28 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "IDENTIFIER");
 
                 node.addChild(parameters0or1.execute());
 
-                if (!lexer.currentTokenValue().equals("return")) {
-                    print("Error return");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'return' keyword");
-                } else {
-                    print("return");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "return");
 
                 node.addChild(type.execute());
 
-                if (!lexer.currentTokenValue().equals("is")) {
-                    print("Error is");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'is' keyword");
-                } else {
-                    print("is");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "is");
 
                 node.addChild(declarationStar.execute());
 
-                if (!lexer.currentTokenValue().equals("begin")) {
-                    print("Error begin");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'begin' keyword");
-                } else {
-                    print("begin");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "begin");
 
                 node.addChild(instruction.execute());
                 node.addChild(instructionPlus.execute());
 
-                if (!lexer.currentTokenValue().equals("end")) {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                } else {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                valueTest(node, lexer, "end");
 
                 node.addChild(identificator0or1.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "SEMICOLON");
 
                 return node;
 
@@ -500,26 +295,8 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenValue().equals("record")) {
@@ -531,38 +308,10 @@ public class AdaGrammar {
                 node.addChild(field.execute());
                 node.addChild(fieldPlus.execute());
 
-                if (!lexer.currentTokenValue().equals("end")) {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                } else {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenValue().equals("record")) {
-                    print("Error record");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'record' keyword");
-                } else {
-                    print("record");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
+                valueTest(node, lexer, "end");
+                valueTest(node, lexer, "record");
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
-
 
             } else {
                 print("Error");
@@ -583,28 +332,11 @@ public class AdaGrammar {
 
                 node.addChild(identificatorCommaPlus.execute());
 
-                if (!lexer.currentTokenType().equals("COLON")) {
-                    print("Error :");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':'");
-                } else {
-                    print(":");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "COLON");
 
                 node.addChild(type.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else {
@@ -621,18 +353,7 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-
-                    node.addChild(identificatorCommaPlus.execute());
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
+                typeTest(node, lexer, "IDENTIFIER");
                 return node;
 
             } else {
@@ -753,15 +474,7 @@ public class AdaGrammar {
                 node.addChild(parameter.execute());
                 node.addChild(parametersSemicolonPlus.execute());
 
-                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 return node;
             } else {
@@ -811,18 +524,10 @@ public class AdaGrammar {
 
                 node.addChild(identificatorCommaPlus.execute());
 
-                if (lexer.currentTokenType().equals("COLON")) {
-                    print(":");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
+                typeTest(node, lexer, "COLON");
 
-                    node.addChild(method0or1.execute());
-                    node.addChild(type.execute());
-                } else {
-                    print("Error :");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':'");
-                }
+                node.addChild(method0or1.execute());
+                node.addChild(type.execute());
 
                 return node;
             } else {
@@ -847,6 +552,7 @@ public class AdaGrammar {
             goodToken2 = lexer.currentTokenValue().equals("not");
             goodToken2 = goodToken2 || lexer.currentTokenValue().equals("new");
             goodToken2 = goodToken2 || lexer.currentTokenType().equals("MINUS");
+            print("current Token : " + lexer.currentTokenValue());
 
             if (goodToken || goodToken2) {
                 Node node = new Node("instruction -> " + lexer.currentTokenValue() + " [...]");
@@ -861,48 +567,13 @@ public class AdaGrammar {
 
                 node.addChild(expressionFollow.execute());
 
-                if (!lexer.currentTokenType().equals("DOT")) {
-                    print("Error .");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '.'");
-                } else {
-                    print(".");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("ASSIGNMENT")) {
-                    print("Error :=");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':='");
-                } else {
-                    print(":=");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "DOT");
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
@@ -913,59 +584,17 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (!lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                } else {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(expressionFollow.execute());
 
-                if (!lexer.currentTokenType().equals("DOT")) {
-                    print("Error .");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '.'");
-                } else {
-                    print(".");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("ASSIGNMENT")) {
-                    print("Error :=");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':='");
-                } else {
-                    print(":=");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "DOT");
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "SEMICOLON");
 
                 return node;
 
@@ -975,92 +604,23 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (!lexer.currentTokenType().equals("APOSTROPHE")) {
-                    print("Error '''");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '''");
-                } else {
-                    print("'");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenValue().equals("val")) {
-                    print("Error val");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'val' keyword");
-                } else {
-                    print("val");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("L_PARENTHESIS")) {
-                    print("Error (");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '('");
-                } else {
-                    print("(");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "APOSTROPHE");
+                valueTest(node, lexer, "val");
+                typeTest(node, lexer, "L_PARENTHESIS");
 
                 node.addChild(expression.execute());
 
-                if (!lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                } else {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(expressionFollow.execute());
 
-                if (!lexer.currentTokenType().equals("DOT")) {
-                    print("Error .");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '.'");
-                } else {
-                    print(".");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                } else {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
-                if (!lexer.currentTokenType().equals("ASSIGNMENT")) {
-                    print("Error :=");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':='");
-                } else {
-                    print(":=");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
+                typeTest(node, lexer, "DOT");
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
 
-                if (!lexer.currentTokenType().equals("SEMICOLON")) {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                } else {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
@@ -1080,16 +640,7 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenValue().equals("begin")) {
@@ -1100,26 +651,8 @@ public class AdaGrammar {
 
                 node.addChild(instructionPlus.execute());
 
-                if (lexer.currentTokenValue().equals("end")) {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                }
-
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                valueTest(node, lexer, "end");
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
 
@@ -1131,41 +664,16 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenValue().equals("then")) {
-                    print("then");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error then");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'then' keyword");
-                }
+                valueTest(node, lexer, "then");
 
                 node.addChild(instruction.execute());
                 node.addChild(instructionPlus.execute());
                 node.addChild(elseIf.execute());
                 node.addChild(else1.execute());
 
-                if (lexer.currentTokenValue().equals("end")) {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                }
-
-                if (lexer.currentTokenValue().equals("if")) {
-                    print("if");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error if");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'if' keyword");
-                }
-
+                valueTest(node, lexer, "end");
+                valueTest(node, lexer, "if");
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenValue().equals("for")) {
@@ -1174,85 +682,25 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
-                if (lexer.currentTokenValue().equals("in")) {
-                    print("in");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error in");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'in' keyword");
-                }
+                typeTest(node, lexer, "IDENTIFIER");
+                valueTest(node, lexer, "in");
 
                 node.addChild(reverse.execute());
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("DOUBLE_DOT")) {
-                    print("..");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ..");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '..'");
-                }
+                typeTest(node, lexer, "DOUBLE_DOT");
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenValue().equals("loop")) {
-                    print("loop");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error loop");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'loop' keyword");
-                }
+                valueTest(node, lexer, "loop");
 
                 node.addChild(instruction.execute());
                 node.addChild(instructionPlus.execute());
 
-                if (lexer.currentTokenValue().equals("end")) {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                }
-
-                if (lexer.currentTokenValue().equals("loop")) {
-                    print("loop");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error loop");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'loop' keyword");
-                }
-
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                valueTest(node, lexer, "end");
+                valueTest(node, lexer, "loop");
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else if (lexer.currentTokenValue().equals("while")) {
@@ -1263,53 +711,19 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenValue().equals("loop")) {
-                    print("loop");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error loop");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'loop' keyword");
-                }
+                valueTest(node, lexer, "loop");
 
                 node.addChild(instruction.execute());
-
                 node.addChild(instructionPlus.execute());
 
-                if (lexer.currentTokenValue().equals("end")) {
-                    print("end");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error end");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'end' keyword");
-                }
-
-                if (lexer.currentTokenValue().equals("loop")) {
-                    print("loop");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error loop");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'loop' keyword");
-                }
-
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
+                valueTest(node, lexer, "end");
+                valueTest(node, lexer, "loop");
+                typeTest(node, lexer, "SEMICOLON");
 
                 return node;
 
             } else {
+                print("current Token : " + lexer.currentTokenValue());
                 throw new Exception("Expected an instruction");
             }
         });
@@ -1325,15 +739,7 @@ public class AdaGrammar {
                 node.addChild(expression.execute());
                 node.addChild(expressionCommaPlus.execute());
 
-                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(instructionAssignment.execute());
 
@@ -1347,70 +753,20 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
 
             } else {
                 Node node = new Node("instructionExpressionAssignment -> expressionFollow [...] ");
-                try {
-                    print("Try");
-                    node.addChild(expressionFollow.execute());
-                } catch (Exception e) {
-                    print("Catch");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '(' or ':='");
-                }
+                node.addChild(expressionFollow.execute());
 
-                if (lexer.currentTokenType().equals("DOT")) {
-                    print(".");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error .");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '.'");
-                }
-
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
-                if (lexer.currentTokenType().equals("ASSIGNMENT")) {
-                    print(":=");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error :=");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':='");
-                }
+                typeTest(node, lexer, "DOT");
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
             }
         });
@@ -1426,58 +782,15 @@ public class AdaGrammar {
             } else {
                 print("Error ;");
                 Node node = new Node("instructionAssignment -> expression ;");
+                node.addChild(expressionFollow.execute());
 
-                try {
-                    print("Try");
-                    node.addChild(expression.execute());
-                } catch (Exception e) {
-                    print("Catch");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an expression");
-                }
-
-                if (lexer.currentTokenType().equals("DOT")) {
-                    print(".");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error .");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '.'");
-                }
-
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
-                if (lexer.currentTokenType().equals("ASSIGNMENT")) {
-                    print(":=");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error :=");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ':='");
-                }
+                typeTest(node, lexer, "DOT");
+                typeTest(node, lexer, "IDENTIFIER");
+                typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("SEMICOLON")) {
-                    print(";");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error ;");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ';'");
-                }
-
+                typeTest(node, lexer, "SEMICOLON");
                 return node;
             }
         });
@@ -1534,15 +847,7 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(expressionFollow.execute());
                 return node;
@@ -1553,48 +858,13 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-
-                if (lexer.currentTokenType().equals("APOSTROPHE")) {
-                    print("'");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error '''");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '''");
-                }
-
-                if (lexer.currentTokenValue().equals("val")) {
-                    print("val");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error val");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'val' keyword");
-                }
-
-                if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
-                    print("(");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error (");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected '('");
-                }
+                typeTest(node, lexer, "APOSTROPHE");
+                valueTest(node, lexer, "val");
+                typeTest(node, lexer, "L_PARENTHESIS");
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(expressionFollow.execute());
                 return node;
@@ -1624,17 +894,9 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
+                typeTest(node, lexer, "IDENTIFIER");
                 node.addChild(expressionFollow.execute());
+                return node;
             }
 
             // Try operator and check if the error raised is Op else do nothing
@@ -1695,15 +957,7 @@ public class AdaGrammar {
                 node.addChild(expression.execute());
                 node.addChild(expressionCommaPlus.execute());
 
-                if (lexer.currentTokenType().equals("R_PARENTHESIS")) {
-                    print(")");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error )");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected ')'");
-                }
+                typeTest(node, lexer, "R_PARENTHESIS");
 
                 node.addChild(expressionFollow.execute());
                 return node;
@@ -1739,15 +993,7 @@ public class AdaGrammar {
 
                 node.addChild(expression.execute());
 
-                if (lexer.currentTokenValue().equals("then")) {
-                    print("then");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error then");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected 'then' keyword");
-                }
+                valueTest(node, lexer, "then");
 
                 node.addChild(instruction.execute());
                 node.addChild(instructionPlus.execute());
@@ -1792,6 +1038,7 @@ public class AdaGrammar {
 
         type.setAction(() -> {
             System.out.println("type");
+
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("type -> IDENTIFIER");
                 Node node = new Node("type -> IDENTIFIER");
@@ -1805,16 +1052,7 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
-                if (lexer.currentTokenType().equals("IDENTIFIER")) {
-                    print("IDENTIFIER");
-                    node.addChild(new Node(lexer.currentTokenValue()));
-                    lexer.nextToken();
-                } else {
-                    print("Error IDENTIFIER");
-                    node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
-                }
-
+                typeTest(node, lexer, "IDENTIFIER");
                 return node;
 
             } else {
@@ -1828,7 +1066,6 @@ public class AdaGrammar {
 
         identificator0or1.setAction(() -> {
             System.out.println("identificator0or1");
-            System.out.println(lexer.currentTokenType());
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("identificator0or1 -> IDENTIFIER");
                 Node node = new Node("identificator0or1 -> IDENTIFIER");
@@ -1843,6 +1080,7 @@ public class AdaGrammar {
 
 
         Node node = axiom.execute();
+        System.out.println(node);
         System.out.println("Test passé");
 
 

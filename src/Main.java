@@ -17,23 +17,23 @@ public class Main {
                 "    aire: integer;\n" +
                 "    begin\n" +
                 "        aire := larg * long ;\n" +
-                "        return aire\n" +
+                "        return aire;\n" +
                 "    end aireRectangle ;\n" +
                 "\n" +
                 "\n" +
                 "    function perimetreRectangle(larg : integer; long : integer) return integer is\n" +
-                "    p : integer\n" +
+                "    p : integer;\n" +
                 "    begin\n" +
-                "        p := larg2 + long2 ;\n" +
-                "        return p\n" +
+                "        p := larg*2 + long*2 ;\n" +
+                "        return p;\n" +
                 "    end perimetreRectangle;\n" +
                 "\n" +
                 "        -- VARIABLES\n" +
                 "choix : integer ;\n" +
                 "        -- PROCEDURE PRINCIPALE\n" +
                 "    begin\n" +
-                "        choix := 2.1;\n" +
-                "        if choix = 1\n" +
+                "        choix := 2.;\n" +
+                "        if choix = 11\n" +
                 "            then valeur := perimetreRectangle(2, 3) ;\n" +
                 "            else valeur := aireRectangale(2, 3) ;\n" +
                 "        end if;\n" +
