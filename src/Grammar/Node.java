@@ -4,6 +4,7 @@ import Grammar.Token.GrammarToken;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class Node {
@@ -60,6 +61,14 @@ public class Node {
         this.failedExplanation.append(failedExplanation);
     }
 
+    public GrammarToken getToken() {
+        return token;
+    }
+
+    public void setChildren(List<Node> children) {
+        this.children = new ArrayList<>(children);
+    }
+
     public String toString() {
         StringBuilder buffer = new StringBuilder(50);
         print(buffer, "", "");
@@ -101,5 +110,55 @@ public class Node {
         }
     }
 
+    public Node removeEpsilon() {
+        return removeEpsilon(this);
+    }
+
+    private Node removeEpsilon(Node racine) {
+        if (racine == null) {
+            return null;
+        }
+
+        if (racine.getStatus() == 3) {
+            return null;
+        }
+
+        List<Node> descendants = new ArrayList<>();
+        for (Node descendant : racine.getChildren()) {
+            Node newDescendant = removeEpsilon(descendant);
+            if (newDescendant != null) {
+                descendants.add(newDescendant);
+            }
+        }
+
+        racine.setChildren(descendants);
+
+        if (racine.status == 2 && descendants.isEmpty()) {
+            return null;
+        }
+
+        return racine;
+    }
+
+
+    public Node removeOneChildNodeTree() {
+        return removeOneChildNodeTree(this);
+    }
+
+    private Node removeOneChildNodeTree(Node racine) {
+        if (racine.getChildren().size() == 1) {
+            return removeOneChildNodeTree(racine.getChildren().getFirst());
+        } else {
+            Node newRacine = new Node(racine.getRule(), racine.getToken());
+            newRacine.setStatus(racine.getStatus());
+            for (Node child : racine.getChildren()) {
+                if (child != null) {
+                    newRacine.addChild(removeOneChildNodeTree(child));
+                }
+
+            }
+            return newRacine;
+        }
+    }
 
 }

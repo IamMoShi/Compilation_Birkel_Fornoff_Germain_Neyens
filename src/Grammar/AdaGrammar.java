@@ -1188,6 +1188,10 @@ public class AdaGrammar {
 
         Node node = axiom.execute();
         System.out.println(node);
+        Node epsilon = node.removeEpsilon();
+        System.out.println(epsilon);
+        Node removed = epsilon.removeOneChildNodeTree();
+        System.out.println(removed);
         System.out.println("Test passé");
 
     }
