@@ -1,6 +1,7 @@
 package Grammar;
 
 import Grammar.Token.GrammarToken;
+import Grammar.Token.TerminalToken;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -138,6 +139,66 @@ public class Node {
         }
 
         return racine;
+    }
+
+    public Node removeTerminalNotUseful() {
+        return removeTerminalNotUseful(this);
+    }
+
+    private Node removeTerminalNotUseful(Node racine) {
+        if (racine == null) {
+            return null;
+        }
+
+        Node newRacine = new Node(racine.getRule(), racine.getToken());
+        newRacine.setStatus(racine.getStatus());
+
+        if (racine.getChildren().isEmpty()) {
+            // Si c'est un nœud terminal avec la valeur "IDENTIFIER", le conserver
+            TerminalToken token = (TerminalToken) racine.getToken();
+
+            if ("IDENTIFIER".equals(token.getType().getName()) ||
+                    "INTEGER".equals(token.getType().getName()) ||
+                    "FLOAT".equals(token.getType().getName()) ||
+                    "STRING".equals(token.getType().getName()) ||
+                    "CHARACTER".equals(token.getType().getName()) ||
+                    "BOOLEAN".equals(token.getType().getName()) ||
+                    "PLUS".equals(token.getType().getName()) ||
+                    "MINUS".equals(token.getType().getName()) ||
+                    "MULTIPLY".equals(token.getType().getName()) ||
+                    "DIVIDE".equals(token.getType().getName()) ||
+                    "INFERIOR_EQUALS".equals(token.getType().getName()) ||
+                    "INFERIOR".equals(token.getType().getName()) ||
+                    "SUPERIOR_EQUALS".equals(token.getType().getName()) ||
+                    "SUPERIOR".equals(token.getType().getName()) ||
+                    "rem".equals(token.getType().getName()) ||
+                    "and".equals(token.getType().getName()) ||
+                    "or".equals(token.getType().getName()) ||
+                    "ASSIGNMENT".equals(token.getType().getName())
+            ) {
+                return newRacine;
+            } else {
+                // Sinon, le nœud terminal n'est pas utile, donc retourner null
+                return null;
+            }
+        }
+
+        ArrayList<Node> descendants = new ArrayList<>();
+        for (Node descendant : racine.getChildren()) {
+            Node newDescendant = removeTerminalNotUseful(descendant);
+            if (newDescendant != null) {
+                descendants.add(newDescendant);
+            }
+        }
+
+        newRacine.setChildren(descendants);
+
+        // Si tous les descendants ont été retirés, le nœud actuel n'est pas utile, retourner null
+        if (newRacine.getChildren().isEmpty()) {
+            return null;
+        }
+
+        return newRacine;
     }
 
 

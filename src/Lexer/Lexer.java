@@ -231,6 +231,7 @@ public class Lexer {
         } else {
             this.newTerminalToken("<", "INFERIOR");
         }
+        this.getNextChar();
     }
 
     private void superior() {
@@ -240,6 +241,7 @@ public class Lexer {
         } else {
             this.newTerminalToken(">", "SUPERIOR");
         }
+        this.getNextChar();
     }
 
     private void assignment() {

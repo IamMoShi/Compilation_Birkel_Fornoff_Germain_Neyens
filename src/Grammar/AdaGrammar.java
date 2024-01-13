@@ -455,9 +455,9 @@ public class AdaGrammar {
             isOperator = isOperator || lexer.currentTokenType().equals("MINUS");
             isOperator = isOperator || lexer.currentTokenType().equals("MULTIPLY");
             isOperator = isOperator || lexer.currentTokenType().equals("DIVIDE");
-            isOperator = isOperator || lexer.currentTokenType().equals("INFERIOR_EQUAL");
+            isOperator = isOperator || lexer.currentTokenType().equals("INFERIOR_EQUALS");
             isOperator = isOperator || lexer.currentTokenType().equals("INFERIOR");
-            isOperator = isOperator || lexer.currentTokenType().equals("SUPERIOR_EQUAL");
+            isOperator = isOperator || lexer.currentTokenType().equals("SUPERIOR_EQUALS");
             isOperator = isOperator || lexer.currentTokenType().equals("SUPERIOR");
             isOperator = isOperator || lexer.currentTokenValue().equals("rem");
             isOperator = isOperator || lexer.currentTokenValue().equals("and");
@@ -1190,8 +1190,10 @@ public class AdaGrammar {
         System.out.println(node);
         Node epsilon = node.removeEpsilon();
         System.out.println(epsilon);
-        Node removed = epsilon.removeOneChildNodeTree();
-        System.out.println(removed);
+        Node useful = epsilon.removeTerminalNotUseful();
+        System.out.println(useful);
+        // Node removed = epsilon.removeOneChildNodeTree();
+        //System.out.println(removed);
         System.out.println("Test passé");
 
     }
