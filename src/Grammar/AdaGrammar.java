@@ -13,7 +13,7 @@ public class AdaGrammar {
     private void valueTest(Node node, Lexer lexer, String value) {
         if (!(lexer.getCurrentToken().getValue().equals(value))) {
             node.setFailed(true);
-            node.addFailedExplanation("Expected '" + value);
+            node.addFailedExplanation("Expected '" + value + "' ; line : " + lexer.getCurrentToken().getLine());
         } else {
             node.addChild(new Node(lexer.getCurrentToken().getValue()));
             lexer.nextToken();
@@ -24,12 +24,25 @@ public class AdaGrammar {
     private void typeTest(Node node, Lexer lexer, String type) {
         if (!(lexer.getCurrentToken().getType().getName().equals(type))) {
             node.setFailed(true);
-            node.addFailedExplanation("Expected '" + type);
+            node.addFailedExplanation("Expected '" + type + "' ; line : " + lexer.getCurrentToken().getLine());
         } else {
             node.addChild(new Node(lexer.getCurrentToken().getValue()));
             lexer.nextToken();
         }
         print(type);
+    }
+
+    private String formatString(String input, int targetLength) {
+        if (input.length() == targetLength) {
+            // La longueur du mot est déjà égale à la longueur cible, aucune modification nécessaire
+            return input;
+        } else if (input.length() < targetLength) {
+            // Ajouter des espaces à droite pour atteindre la longueur cible
+            return String.format("%-" + targetLength + "s", input);
+        } else {
+            // Couper le mot et le remplacer par "..." pour atteindre la longueur cible
+            return input.substring(0, targetLength - 3) + "...";
+        }
     }
 
     public void grammar1(String entry) throws Exception {
@@ -38,14 +51,19 @@ public class AdaGrammar {
             lexer.tokenize();
         } catch (Exception e) {
             System.out.println("Error while tokenizing");
-            System.out.println(e.getMessage());
+            System.out.println(e.toString());
+            return;
         }
 
         // Parcours les tokens terminaux du lexer affiche sous la forme d'une liste les tokens terminaux avec leur type (valeur, type)
         for (TerminalToken terminalToken : lexer.getTokens()) {
-            System.out.println(terminalToken.getValue() + " " + terminalToken.getType().getName());
-        }
+            // Formatage de la valeur avec 25 caractères et du type avec 30 caractères
+            String formattedValue = formatString(terminalToken.getValue(), 15);
+            String formattedType = formatString(terminalToken.getType().getName(), 15);
 
+            // Affichage sous la forme d'une liste
+            System.out.println(formattedValue + "── " + formattedType);
+        }
         System.out.println("Test pour la grammaire : grammar1");
 
         NonTerminalToken expression = new NonTerminalToken("E");
@@ -106,8 +124,13 @@ public class AdaGrammar {
             //
             valueTest(node, lexer, "begin");
             //
-            node.addChild(instruction.execute());
-            node.addChild(instructionPlus.execute());
+
+            try {
+                node.addChild(instruction.execute());
+                node.addChild(instructionPlus.execute());
+            } catch (Exception e) {
+
+            }
             //
             valueTest(node, lexer, "end");
             //
@@ -123,6 +146,7 @@ public class AdaGrammar {
             // Try to do rules D and F1 else do nothing
             try {
                 Node node = new Node("declarationStar -> declaration declarationStar");
+                node.setStatus(2);
                 node.addChild(declaration.execute());
                 node.addChild(declarationStar.execute());
                 return node;
@@ -139,6 +163,7 @@ public class AdaGrammar {
                 print("type");
 
                 Node node = new Node("declaration -> type IDENTIFIER declarationFact1");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -155,7 +180,7 @@ public class AdaGrammar {
                     print("Error IDENTIFIER");
 
                     node.setFailed(true);
-                    node.addFailedExplanation("Expected an identifier");
+                    node.addFailedExplanation("Expected an identifier ; line : " + lexer.getCurrentToken().getLine());
                 }
 
                 return node;
@@ -164,6 +189,7 @@ public class AdaGrammar {
                 print("IDENTIFIER");
 
                 Node node = new Node("declaration -> IDENTIFIER indentificatorCommaPlus : type expressionAssignment;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.getCurrentToken().getValue()));
                 lexer.nextToken();
 
@@ -186,13 +212,13 @@ public class AdaGrammar {
                     } else { // -------------------------------------------------------------
                         print("Error ;");
                         node.setFailed(true);
-                        node.addFailedExplanation("Expected ';'");
+                        node.addFailedExplanation("Expected 'SEMICOLON' ; line : " + lexer.getCurrentToken().getLine());
                     }
 
                 } else { // ----------------------------------------------------------------------------
                     print("Error :");
                     node.setFailed(true);
-                    node.addFailedExplanation("Expected ':'");
+                    node.addFailedExplanation("Expected 'COLON' ; line : " + lexer.getCurrentToken().getLine());
                 }
 
                 return node;
@@ -201,6 +227,7 @@ public class AdaGrammar {
                 print("procedure");
 
                 Node node = new Node("declaration -> procedure IDENTIFIER [...]");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -214,8 +241,13 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "begin");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception e) {
+
+                }
+
 
                 valueTest(node, lexer, "end");
 
@@ -228,6 +260,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("function")) {
                 print("function");
                 Node node = new Node("declaration -> function IDENTIFIER [...]");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -245,8 +278,13 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "begin");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception ignored) {
+
+                }
+
 
                 valueTest(node, lexer, "end");
 
@@ -258,7 +296,7 @@ public class AdaGrammar {
 
             } else {
                 print("Error declaration");
-                throw new Exception("Expected 'type', 'procedure' or 'function' keyword");
+                throw new Exception("Expected 'type', 'procedure' or 'function' keyword ");
             }
         });
 
@@ -266,13 +304,13 @@ public class AdaGrammar {
             System.out.println("declarationFact1");
             if (lexer.currentTokenType().equals("SEMICOLON")) {
                 print(";");
-                Node node = new Node("declarationFact1 -> ;");
+                Node node = new Node(";");
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
             } else if (lexer.currentTokenValue().equals("is")) {
                 print("is");
-                Node node = new Node("declarationFact1 -> is");
+                Node node = new Node("is");
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -282,7 +320,7 @@ public class AdaGrammar {
                 print("Error");
                 Node node = new Node("declarationFact1");
                 node.setFailed(true);
-                node.addFailedExplanation("Expected ';' or 'is' keyword");
+                node.addFailedExplanation("Expected 'SEMICOLON' or 'is' keyword ; line : " + lexer.getCurrentToken().getLine());
                 return node;
             }
         });
@@ -292,6 +330,7 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("access")) {
                 print("access");
                 Node node = new Node("declarationFact2 -> access type");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -302,6 +341,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("record")) {
                 print("record");
                 Node node = new Node("declarationFact2 -> record field fieldPlus end record;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -317,7 +357,7 @@ public class AdaGrammar {
                 print("Error");
                 Node node = new Node("declarationFact2");
                 node.setFailed(true);
-                node.addFailedExplanation("Expected 'access' or 'record' keyword");
+                node.addFailedExplanation("Expected 'access' or 'record' keywords ; line : " + lexer.getCurrentToken().getLine());
                 return node;
             }
         });
@@ -327,6 +367,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("IDENTIFIER");
                 Node node = new Node("field -> IDENTIFIER identificatorCommaPlus : type ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -350,6 +391,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("COMMA")) {
                 print(",");
                 Node node = new Node("identificatorCommaPlus -> , IDENTIFIER identificatorCommaPlus");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -358,7 +400,9 @@ public class AdaGrammar {
 
             } else {
                 print("identificatorCommaPlus -> Epsilon");
-                return new Node("identificatorCommaPlus -> Epsilon");
+                Node node = new Node("identificatorCommaPlus -> Epsilon");
+                node.setStatus(3);
+                return node;
 
             }
         });
@@ -368,12 +412,16 @@ public class AdaGrammar {
             try {
                 print("fieldPlus -> field fieldPlus");
                 Node node = new Node("fieldPlus -> field fieldPlus");
+                node.setStatus(2);
                 node.addChild(field.execute());
                 node.addChild(fieldPlus.execute());
                 return node;
             } catch (Exception e) {
                 print("fieldPlus -> Epsilon");
-                return new Node("fieldPlus -> Epsilon");
+                Node node = new Node("fieldPlus -> Epsilon");
+                node.setStatus(3);
+                return node;
+
             }
         });
 
@@ -382,6 +430,7 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("in")) {
                 print("in");
                 Node node = new Node("method -> in methodFact");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -398,12 +447,15 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("out")) {
                 print("out");
                 Node node = new Node("methodFact -> out");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
             } else {
                 print("Error out");
-                return new Node("methodFact -> Epsilon");
+                Node node = new Node("methodFact -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -412,10 +464,13 @@ public class AdaGrammar {
             try {
                 print("method0or1 -> method");
                 Node node = new Node("method0or1 -> method");
+                node.setStatus(2);
                 node.addChild(method.execute());
                 return node;
             } catch (Exception e) {
-                return new Node("method0or1 -> Epsilon");
+                Node node = new Node("method0or1 -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -438,6 +493,7 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("and") && lexer.getNextToken().getValue().equals("then")) {
                 print("and then");
                 Node node = new Node("operator -> and then");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 node.addChild(new Node(lexer.currentTokenValue()));
@@ -446,6 +502,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("or") && lexer.getNextToken().getValue().equals("else")) {
                 print("or else");
                 Node node = new Node("operator -> or else");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 node.addChild(new Node(lexer.currentTokenValue()));
@@ -454,6 +511,7 @@ public class AdaGrammar {
             } else if (isOperator) {
                 print("operator -> " + lexer.currentTokenValue());
                 Node node = new Node("operator -> " + lexer.currentTokenValue());
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
@@ -468,6 +526,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
                 Node node = new Node("parameters -> ( parameter parametersSemicolonPlus )");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -479,7 +538,7 @@ public class AdaGrammar {
                 return node;
             } else {
                 print("Error (");
-                throw new Exception("Expected '('");
+                throw new Exception("Expected 'L_PARENTHESIS' ; line : " + lexer.getCurrentToken().getLine());
             }
         });
 
@@ -488,6 +547,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("SEMICOLON")) {
                 print(";");
                 Node node = new Node("parametersSemicolonPlus -> ; parameter parametersSemicolonPlus");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -497,7 +557,9 @@ public class AdaGrammar {
                 return node;
             } else {
                 print("parametersSemicolonPlus -> Epsilon");
-                return new Node("parametersSemicolonPlus -> Epsilon");
+                Node node = new Node("parametersSemicolonPlus -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -506,11 +568,14 @@ public class AdaGrammar {
             try {
                 print("parameters0or1 -> parameters");
                 Node node = new Node("parameters0or1 -> parameters");
+                node.setStatus(2);
                 node.addChild(parameters.execute());
                 return node;
             } catch (Exception e) {
                 print("parameters0or1 -> Epsilon");
-                return new Node("parameters0or1 -> Epsilon");
+                Node node = new Node("parameters0or1 -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -519,6 +584,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("IDENTIFIER");
                 Node node = new Node("parameter -> IDENTIFIER identificatorCommaPlus : type method0or1");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -534,7 +600,7 @@ public class AdaGrammar {
                 print("Error IDENTIFIER");
                 Node node = new Node("parameter");
                 node.setFailed(true);
-                node.addFailedExplanation("Expected an identifier");
+                node.addFailedExplanation("Expected an identifier line : " + lexer.getCurrentToken().getLine());
                 return node;
             }
         });
@@ -556,6 +622,7 @@ public class AdaGrammar {
 
             if (goodToken || goodToken2) {
                 Node node = new Node("instruction -> " + lexer.currentTokenValue() + " [...]");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 print("instruction 2 -> " + lexer.currentTokenValue() + " [...]");
                 lexer.nextToken();
@@ -579,6 +646,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
                 Node node = new Node("instruction -> ( expression ) expressionFollow . IDENTIFIER := expression ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -601,6 +669,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("character")) {
                 print("character");
                 Node node = new Node("instruction -> character'val [...]");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -626,6 +695,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("IDENTIFIER");
                 Node node = new Node("instruction -> IDENTIFIER instructionExpressionAssignment");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -635,6 +705,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("return")) {
                 print("return");
                 Node node = new Node("instruction -> return expression ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -646,6 +717,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("begin")) {
                 print("begin");
                 Node node = new Node("instruction -> begin instruction instructionPlus end IDENTIFIER ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -659,6 +731,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("if")) {
                 print("if");
                 Node node = new Node("instruction -> if expression then instruction instructionPlus elseIf else1 end if ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -666,8 +739,12 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "then");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception ignored) {
+
+                }
                 node.addChild(elseIf.execute());
                 node.addChild(else1.execute());
 
@@ -679,6 +756,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("for")) {
                 print("for");
                 Node node = new Node("instruction -> for IDENTIFIER in reverse expression .. expression loop instruction instructionPlus end loop ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -695,8 +773,12 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "loop");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception ignored) {
+
+                }
 
                 valueTest(node, lexer, "end");
                 valueTest(node, lexer, "loop");
@@ -706,6 +788,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("while")) {
                 print("while");
                 Node node = new Node("instruction -> while expression loop instruction instructionPlus end loop ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -713,8 +796,11 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "loop");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception ignored) {
+                }
 
                 valueTest(node, lexer, "end");
                 valueTest(node, lexer, "loop");
@@ -724,7 +810,7 @@ public class AdaGrammar {
 
             } else {
                 print("current Token : " + lexer.currentTokenValue());
-                throw new Exception("Expected an instruction");
+                throw new Exception("Expected an instruction ; line : " + lexer.getCurrentToken().getLine());
             }
         });
 
@@ -733,6 +819,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
                 Node node = new Node("instructionExpressionAssignment -> ( expression ) expressionFollow . IDENTIFIER := expression ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -748,6 +835,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenType().equals("ASSIGNMENT")) {
                 print(":=");
                 Node node = new Node("instructionExpressionAssignment -> := expression ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -758,6 +846,7 @@ public class AdaGrammar {
 
             } else {
                 Node node = new Node("instructionExpressionAssignment -> expressionFollow [...] ");
+                node.setStatus(2);
                 node.addChild(expressionFollow.execute());
 
                 typeTest(node, lexer, "DOT");
@@ -776,12 +865,14 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("SEMICOLON")) {
                 print(";");
                 Node node = new Node("instructionAssignment -> ;");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
             } else {
                 print("Error ;");
                 Node node = new Node("instructionAssignment -> expression ;");
+                node.setStatus(2);
                 node.addChild(expressionFollow.execute());
 
                 typeTest(node, lexer, "DOT");
@@ -800,12 +891,21 @@ public class AdaGrammar {
             try {
                 print("Try");
                 Node node = new Node("instructionPlus -> instruction instructionPlus");
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                node.setStatus(2);
+
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception e) {
+                }
+
                 return node;
             } catch (Exception e) {
                 print("Catch");
-                return new Node("instructionPlus -> Epsilon");
+                Node node = new Node("instructionPlus -> Epsilon");
+                node.setStatus(3);
+                return node;
+
             }
         });
 
@@ -828,6 +928,7 @@ public class AdaGrammar {
             if (goodToken || goodToken2) {
                 print("expression -> " + lexer.currentTokenValue() + " expressionFollow");
                 Node node = new Node("expression -> " + lexer.currentTokenValue() + " expressionFollow");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -842,6 +943,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
                 Node node = new Node("expression -> ( expression ) expressionFollow");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -855,6 +957,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("character")) {
                 print("character");
                 Node node = new Node("expression -> character'val ( expression ) expressionFollow");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -872,6 +975,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("IDENTIFIER");
                 Node node = new Node("expression -> IDENTIFIER expressionFact");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -881,7 +985,7 @@ public class AdaGrammar {
                 print("Error expression :" + lexer.currentTokenValue());
                 Node node = new Node("expression");
                 node.setFailed(true);
-                node.addFailedExplanation("Expected an expression");
+                node.addFailedExplanation("Expected an expression ; line : " + lexer.getCurrentToken().getLine());
                 return node;
             }
         });
@@ -891,6 +995,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("DOT")) {
                 print(".");
                 Node node = new Node("expressionFollow -> . IDENTIFIER expressionAssignment");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -903,13 +1008,16 @@ public class AdaGrammar {
             try {
                 print("Try");
                 Node node = new Node("expressionFollow -> operator expression expressionFollow");
+                node.setStatus(2);
                 node.addChild(operator.execute());
                 node.addChild(expression.execute());
                 node.addChild(expressionFollow.execute());
                 return node;
             } catch (Exception e) {
                 print("Catch");
-                return new Node("expressionFollow -> Epsilon");
+                Node node = new Node("expressionFollow -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -918,6 +1026,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("COMMA")) {
                 print(",");
                 Node node = new Node("expressionCommaPlus -> , expression expressionCommaPlus");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -926,7 +1035,9 @@ public class AdaGrammar {
                 return node;
             } else {
                 print("expressionCommaPlus -> Epsilon");
-                return new Node("expressionCommaPlus -> Epsilon");
+                Node node = new Node("expressionCommaPlus -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -935,6 +1046,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("ASSIGNMENT")) {
                 print(":=");
                 Node node = new Node("expressionAssignment -> := expression");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -942,7 +1054,9 @@ public class AdaGrammar {
                 return node;
             } else {
                 print("expressionAssignment -> Epsilon");
-                return new Node("expressionAssignment -> Epsilon");
+                Node node = new Node("expressionAssignment -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -951,6 +1065,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
                 Node node = new Node("expressionFact -> ( expressionCommaPlus ) expressionFollow");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -963,8 +1078,9 @@ public class AdaGrammar {
                 return node;
 
             } else {
-                print("expressionFact -> Epsilon");
+                print("expressionFact -> expressionFollow");
                 Node node = new Node("expressionFact -> expressionFollow");
+                node.setStatus(2);
                 node.addChild(expressionFollow.execute());
                 return node;
             }
@@ -975,11 +1091,14 @@ public class AdaGrammar {
             try {
                 print("Try");
                 Node node = new Node("expression0or1 -> expression");
+                node.setStatus(2);
                 node.addChild(expression.execute());
                 return node;
             } catch (Exception e) {
                 print("Catch");
-                return new Node("expression0or1 -> Epsilon");
+                Node node = new Node("expression0or1 -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -988,6 +1107,7 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("elsif")) {
                 print("elsif");
                 Node node = new Node("elseIf -> elsif expression then instruction instructionPlus elseIf");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -995,13 +1115,20 @@ public class AdaGrammar {
 
                 valueTest(node, lexer, "then");
 
-                node.addChild(instruction.execute());
-                node.addChild(instructionPlus.execute());
+                try {
+                    node.addChild(instruction.execute());
+                    node.addChild(instructionPlus.execute());
+                } catch (Exception e) {
+
+                }
+
                 node.addChild(elseIf.execute());
                 return node;
             } else {
                 print("elseIf -> Epsilon");
-                return new Node("elseIf -> Epsilon");
+                Node node = new Node("elseIf -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -1010,6 +1137,7 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("else")) {
                 print("else");
                 Node node = new Node("else1 -> else instruction instructionPlus");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -1018,7 +1146,9 @@ public class AdaGrammar {
                 return node;
             } else {
                 print("else1 -> Epsilon");
-                return new Node("else1 -> Epsilon");
+                Node node = new Node("else1 -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -1027,12 +1157,15 @@ public class AdaGrammar {
             if (lexer.currentTokenValue().equals("reverse")) {
                 print("reverse");
                 Node node = new Node("reverse -> reverse");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
             } else {
                 print("reverse -> Epsilon");
-                return new Node("reverse -> Epsilon");
+                Node node = new Node("reverse -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 
@@ -1042,6 +1175,7 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("type -> IDENTIFIER");
                 Node node = new Node("type -> IDENTIFIER");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
@@ -1049,6 +1183,7 @@ public class AdaGrammar {
             } else if (lexer.currentTokenValue().equals("access")) {
                 print("type -> access type");
                 Node node = new Node("type -> access type");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
 
@@ -1059,7 +1194,7 @@ public class AdaGrammar {
                 print("Error");
                 Node node = new Node("type");
                 node.setFailed(true);
-                node.addFailedExplanation("Expected an identifier or 'access' keyword");
+                node.addFailedExplanation("Expected an identifier or 'access' keyword; line " + lexer.getCurrentToken().getLine());
                 return node;
             }
         });
@@ -1069,12 +1204,15 @@ public class AdaGrammar {
             if (lexer.currentTokenType().equals("IDENTIFIER")) {
                 print("identificator0or1 -> IDENTIFIER");
                 Node node = new Node("identificator0or1 -> IDENTIFIER");
+                node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue()));
                 lexer.nextToken();
                 return node;
             } else {
                 print("identificator0or1 -> Epsilon");
-                return new Node("identificator0or1 -> Epsilon");
+                Node node = new Node("identificator0or1 -> Epsilon");
+                node.setStatus(3);
+                return node;
             }
         });
 

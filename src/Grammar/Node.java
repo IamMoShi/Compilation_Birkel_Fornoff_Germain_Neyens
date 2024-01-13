@@ -9,12 +9,14 @@ public class Node {
     private boolean failed;
     private StringBuilder failedExplanation;
     private ArrayList<Node> children;
+    private int status;
 
     public Node(String rule) {
         this.rule = rule;
         this.failed = false;
         this.failedExplanation = new StringBuilder();
         this.children = new ArrayList<>();
+        this.status = 0;
     }
 
     public void addChild(Node child) {
@@ -23,6 +25,7 @@ public class Node {
 
     public void setFailed(boolean failed) {
         this.failed = failed;
+        this.status = 1;
     }
 
     public String getRule() {
@@ -37,9 +40,16 @@ public class Node {
         return children;
     }
 
-
     public String getFailedExplanation() {
         return failedExplanation.toString();
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public void addFailedExplanation(String failedExplanation) {
@@ -53,8 +63,19 @@ public class Node {
     }
 
     private void print(StringBuilder buffer, String prefix, String childrenPrefix) {
-        // Utilisation de séquences d'échappement ANSI pour la coloration du texte
-        String color = failed ? "\u001B[31m" : "\u001B[0m"; // Rouge si échec, sinon par défaut
+        String color = switch (status) {
+            case 0 -> // Status 0 (blanc)
+                    "\u001B[0m"; // Blanc
+            case 1 -> // Status 1 (erreur)
+                    "\u001B[31m"; // Rouge
+            case 2 -> // Status 2 (autre couleur)
+                    "\u001B[32m"; // Vert
+            case 3 -> // Status 3 (autre couleur)
+                    "\u001B[94m"; // Bleu clair
+            case 4 -> // Status 4 (autre couleur)
+                    "\u001B[34m"; // Bleu
+            default -> "\u001B[0m"; // Blanc par défaut
+        };
 
         buffer.append(prefix);
         buffer.append(color);
@@ -63,7 +84,7 @@ public class Node {
         buffer.append('\n');
 
         if (children != null) {
-            for (Iterator<Node> it = children.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = children.iterator(); it.hasNext(); ) {
                 Node next = it.next();
                 if (next != null) {
                     if (it.hasNext()) {

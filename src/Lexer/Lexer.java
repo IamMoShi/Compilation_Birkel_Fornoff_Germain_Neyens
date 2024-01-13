@@ -73,6 +73,7 @@ public class Lexer {
 
     public void newTerminalToken(String name, String type) {
         TerminalToken token = new TerminalToken(name);
+        token.setLine(this.lineCounter);
         this.newTypeToken(token, type);
         this.tokens.add(token);
     }
