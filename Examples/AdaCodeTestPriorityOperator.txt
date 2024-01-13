@@ -18,6 +18,6 @@ begin
     result2 := (a + b) * (c - d) / e;
 
     -- Affichage des résultats
-    Put_Line("Result1 (sans gestion correcte de la priorité) : " & Integer'Image(result1));
-    Put_Line("Result2 (avec gestion correcte de la priorité) : " & Integer'Image(result2));
+    Put_Line((Integer'Image(result1));
+    Put_Line((Integer'Image(result2));
 end AdaCodeTestPriorityOperator;
