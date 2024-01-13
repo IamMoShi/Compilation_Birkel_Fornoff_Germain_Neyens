@@ -1,5 +1,7 @@
 package Grammar;
 
+import Grammar.Token.GrammarToken;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -10,13 +12,15 @@ public class Node {
     private StringBuilder failedExplanation;
     private ArrayList<Node> children;
     private int status;
+    private GrammarToken token;
 
-    public Node(String rule) {
+    public Node(String rule, GrammarToken token) {
         this.rule = rule;
         this.failed = false;
         this.failedExplanation = new StringBuilder();
         this.children = new ArrayList<>();
         this.status = 0;
+        this.token = token;
     }
 
     public void addChild(Node child) {
