@@ -440,7 +440,7 @@ public class Node {
             case "(" -> buildParenthesisTree(nodes);
             case "-" -> moinsUnaire(nodes);
             case "not" -> notGesture(nodes);
-            default -> inferiorSuperior(nodes);
+            default -> equalsNotEquals(nodes);
         };
     }
 
@@ -526,7 +526,7 @@ public class Node {
                     newNode = notNode;
 
                 } else {
-                    newNode = inferiorSuperior(nodes);
+                    newNode = equalsNotEquals(nodes);
                 }
             }
         } catch (Exception e) {
@@ -556,7 +556,54 @@ public class Node {
             notNode.addChild(notRecursive(nodes));
             return notNode;
         } else {
-            return inferiorSuperior(nodes);
+            return equalsNotEquals(nodes);
+        }
+    }
+
+    private Node equalsNotEquals(ArrayList<Node> nodes) {
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("=")) {
+
+                nodes.removeFirst();
+                Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
+                plusNode.addChild(node1);
+                System.out.println(plusNode);
+                plusNode.addChild(equalsNotEquals(nodes));
+
+                System.out.println("equals, equalsNode : " + plusNode);
+                return plusNode;
+
+            } else if (node2.getToken().getValue().equals("/=")) {
+
+                nodes.removeFirst();
+                Node plusNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
+                plusNode.addChild(node1);
+                plusNode.addChild(equalsNotEquals(nodes));
+
+                System.out.println("notEquals, notEqualsNode : " + plusNode);
+                return plusNode;
+
+            } else {
+                // remettre le premier node
+                nodes.addFirst(node1);
+                return inferiorSuperior(nodes);
         }
     }
 
