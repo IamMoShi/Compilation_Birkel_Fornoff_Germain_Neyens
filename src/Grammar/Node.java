@@ -7,6 +7,7 @@ import Grammar.Token.TerminalToken;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 
 
 public class Node {
@@ -305,8 +306,10 @@ public class Node {
 
             newLeftPart.setChildren(leftPart);
             newLeftPart.setChildren(assignmentExpressions(newLeftPart));
+
             newRightPart.setChildren(rightPart);
             newRightPart.setChildren(assignmentExpressions(newRightPart));
+            newRightPart.setChildren(buildParenthesisTree(newRightPart.getChildren()));
 
             assert newCurrentNode != null;
 
@@ -355,8 +358,10 @@ public class Node {
 
             newLeftPart.setChildren(leftPart);
             newLeftPart.setChildren(assignmentExpressions(newLeftPart));
+
             newRightPart.setChildren(rightPart);
             newRightPart.setChildren(assignmentExpressions(newRightPart));
+            newRightPart.setChildren(buildParenthesisTree(newRightPart.getChildren()));
 
             newCurrentNode = new Node(":=", new TerminalToken(":="));
 
@@ -423,6 +428,148 @@ public class Node {
             children.addAll(assignmentExpressionsRightPart(child));
         }
         return children;
+    }
+
+
+    private ArrayList<Node> buildParenthesisTree(ArrayList<Node> nodes) {
+        System.out.println("buildParenthesisTree");
+
+        ArrayList<Node> newNodes = new ArrayList<>();
+        nodes = moinsUnaire(nodes);
+
+        while (!nodes.isEmpty()) {
+            Node currentNode = nodes.removeFirst();
+
+            if (currentNode.getToken().getValue().equals("(")) {
+                Node parenthesisNode = new Node("parenthesis", new NonTerminalToken("parenthesis"));
+                parenthesisNode.setChildren(buildParenthesisTree(nodes));
+                newNodes.add(parenthesisNode);
+            } else if (currentNode.getToken().getValue().equals(")")) {
+                return dotGesture(newNodes);
+            } else {
+                newNodes.add(currentNode);
+            }
+        }
+
+        return dotGesture(newNodes);
+    }
+
+
+    private ArrayList<Node> dotGesture(ArrayList<Node> nodes) {
+        System.out.println("dotGesture");
+        // Le point est un opérateur binaire
+        ArrayList<Node> newNodes = new ArrayList<> ();
+
+        // On parcourt la liste de droite à gauche
+
+        while ((nodes.size() > 1)) {
+            Node currentNode = nodes.removeFirst();
+
+            if (nodes.getFirst().getToken().getValue().equals(".")) {
+                Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
+                dotNode.addChild(currentNode); // On ajoute l'élément avant le point
+                dotNode.addChild(dotRecursive(nodes)); // On regarde ce qu'il y a après le point
+                newNodes.add(dotNode); // On ajoute le noeud dotNode
+            } else {
+                newNodes.add(currentNode); // On ajoute le noeud courant à la liste car il n'est pas concerné par le point
+            }
+        }
+
+        if (nodes.size() == 1) {
+            newNodes.add(nodes.removeFirst());
+        }
+
+        return notGesture(newNodes);
+
+    }
+
+    private Node dotRecursive(ArrayList<Node> nodes) {
+        System.out.println("dotRecursive");
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+
+        Node firstNode = nodes.getFirst(); // Dot or what is just after
+        if (firstNode.getToken().getValue().equals(".")) {
+            Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
+            nodes.removeFirst(); // On enlève le point
+            Node valueNode = nodes.removeFirst();
+            dotNode.addChild(valueNode); // On ajoute l'élément après le point
+
+            Node node = dotRecursive(nodes); // On regarde s'il y a un autre point
+            if (node != null) { // Si oui, on l'ajoute sinon on ne fait rien
+                dotNode.addChild(node);
+                return dotNode;
+            } else {
+                return valueNode;
+            }
+
+        } else {
+            return null;
+        }
+    }
+
+    private ArrayList<Node> moinsUnaire(ArrayList<Node> nodes) {
+        System.out.println("moinsUnaire");
+        if (nodes.isEmpty()) {
+            return nodes;
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+
+            Node moinsUnaireNode = new Node("Moins unaire", new NonTerminalToken("Moins unaire"));
+            Node moins = nodes.removeFirst();
+            moinsUnaireNode.setChildren(buildParenthesisTree(nodes));
+            moinsUnaireNode.getChildren().addFirst(moins);
+
+            ArrayList<Node> newNodes = new ArrayList<> ();
+            newNodes.add(moinsUnaireNode);
+
+            return newNodes;
+        }
+        return nodes;
+
+    }
+
+
+    private ArrayList<Node> notGesture(ArrayList<Node> nodes) {
+        System.out.println("notGesture");
+        ArrayList<Node> newNodes = new ArrayList<> ();
+        try {
+            while (!nodes.isEmpty()) {
+                Node currentNode = nodes.removeFirst();
+                if (currentNode.getToken().getValue().equals("not")) {
+                    Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
+                    notNode.addChild(currentNode);
+                    notNode.addChild(notRecursive(nodes));
+                    newNodes.add(notNode);
+
+                } else {
+                    newNodes.add(currentNode);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return newNodes;
+    }
+
+
+    private Node notRecursive(ArrayList<Node> nodes) {
+        System.out.println("notRecursive");
+        if (nodes == null) {
+            return null;
+        }
+        Node firstNode = nodes.removeFirst(); // Not or what is just after
+        if (firstNode.getToken().getValue().equals("not")) {
+            Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
+            notNode.addChild(firstNode);
+            notNode.addChild(notRecursive(nodes));
+            return notNode;
+        } else {
+            return firstNode;
+        }
     }
 
 }
