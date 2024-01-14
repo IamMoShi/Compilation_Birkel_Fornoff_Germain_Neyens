@@ -309,7 +309,10 @@ public class Node {
 
             newRightPart.setChildren(rightPart);
             newRightPart.setChildren(assignmentExpressions(newRightPart));
-            newRightPart.setChildren(buildParenthesisTree(newRightPart.getChildren()));
+            Node node = initializeBuildParenthesisTree(newRightPart.getChildren());
+            newRightPart.setChildren(new ArrayList<>());
+            newRightPart.addChild(node);
+
 
             assert newCurrentNode != null;
 
@@ -361,7 +364,9 @@ public class Node {
 
             newRightPart.setChildren(rightPart);
             newRightPart.setChildren(assignmentExpressions(newRightPart));
-            newRightPart.setChildren(buildParenthesisTree(newRightPart.getChildren()));
+            Node node = initializeBuildParenthesisTree(newRightPart.getChildren());
+            newRightPart.setChildren(new ArrayList<>());
+            newRightPart.addChild(node);
 
             newCurrentNode = new Node(":=", new TerminalToken(":="));
 
@@ -430,147 +435,251 @@ public class Node {
         return children;
     }
 
+    private Node initializeBuildParenthesisTree(ArrayList<Node> nodes) {
+        return notGesture(nodes); // A chaque fois que l'on rentre dans une parenthèse, on regarde s'il y a un moins unaire
+    }
 
-    private ArrayList<Node> buildParenthesisTree(ArrayList<Node> nodes) {
+
+    private Node buildParenthesisTree(ArrayList<Node> nodes) {
         System.out.println("buildParenthesisTree");
 
         ArrayList<Node> newNodes = new ArrayList<>();
-        nodes = moinsUnaire(nodes);
 
         while (!nodes.isEmpty()) {
-            Node currentNode = nodes.removeFirst();
+            Node currentNode = nodes.getFirst();
 
             if (currentNode.getToken().getValue().equals("(")) {
+
+                nodes.removeFirst();
                 Node parenthesisNode = new Node("parenthesis", new NonTerminalToken("parenthesis"));
-                parenthesisNode.setChildren(buildParenthesisTree(nodes));
-                newNodes.add(parenthesisNode);
+                Node node = moinsUnaire(nodes);
+                System.out.println("parenthesisTree, node : " + node);
+                parenthesisNode.addChild(node); // On construit l'arbre de la parenthèse
+                System.out.println("parenthesisTree : " + parenthesisNode);
+                return (parenthesisNode);
+
             } else if (currentNode.getToken().getValue().equals(")")) {
-                return dotGesture(newNodes);
+
+                nodes.removeFirst(); // On enlève la parenthèse fermante
+                System.out.println("parenthesisTree : " + newNodes);
+                return notGesture(newNodes);
+
+
+            } else if (currentNode.getToken().getValue().equals(";")) {
+                return notGesture(newNodes);
+
             } else {
-                newNodes.add(currentNode);
+                newNodes.add(nodes.removeFirst());
             }
-        }
-
-        return dotGesture(newNodes);
-    }
-
-
-    private ArrayList<Node> dotGesture(ArrayList<Node> nodes) {
-        System.out.println("dotGesture");
-        // Le point est un opérateur binaire
-        ArrayList<Node> newNodes = new ArrayList<> ();
-
-        // On parcourt la liste de droite à gauche
-
-        while ((nodes.size() > 1)) {
-            Node currentNode = nodes.removeFirst();
-
-            if (nodes.getFirst().getToken().getValue().equals(".")) {
-                Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
-                dotNode.addChild(currentNode); // On ajoute l'élément avant le point
-                dotNode.addChild(dotRecursive(nodes)); // On regarde ce qu'il y a après le point
-                newNodes.add(dotNode); // On ajoute le noeud dotNode
-            } else {
-                newNodes.add(currentNode); // On ajoute le noeud courant à la liste car il n'est pas concerné par le point
-            }
-        }
-
-        if (nodes.size() == 1) {
-            newNodes.add(nodes.removeFirst());
         }
 
         return notGesture(newNodes);
-
     }
 
-    private Node dotRecursive(ArrayList<Node> nodes) {
-        System.out.println("dotRecursive");
-        if (nodes == null || nodes.isEmpty()) {
-            return null;
-        }
-
-        Node firstNode = nodes.getFirst(); // Dot or what is just after
-        if (firstNode.getToken().getValue().equals(".")) {
-            Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
-            nodes.removeFirst(); // On enlève le point
-            Node valueNode = nodes.removeFirst();
-            dotNode.addChild(valueNode); // On ajoute l'élément après le point
-
-            Node node = dotRecursive(nodes); // On regarde s'il y a un autre point
-            if (node != null) { // Si oui, on l'ajoute sinon on ne fait rien
-                dotNode.addChild(node);
-                return dotNode;
-            } else {
-                return valueNode;
-            }
-
-        } else {
-            return null;
-        }
-    }
-
-    private ArrayList<Node> moinsUnaire(ArrayList<Node> nodes) {
+    private Node moinsUnaire(ArrayList<Node> nodes) {
         System.out.println("moinsUnaire");
         if (nodes.isEmpty()) {
-            return nodes;
+            System.out.println("moinsUnaire, nodes is empty");
+            return null;
         }
 
         if (nodes.getFirst().getToken().getValue().equals("-")) {
 
             Node moinsUnaireNode = new Node("Moins unaire", new NonTerminalToken("Moins unaire"));
             Node moins = nodes.removeFirst();
-            moinsUnaireNode.setChildren(buildParenthesisTree(nodes));
+            moinsUnaireNode.addChild(buildParenthesisTree(nodes));
             moinsUnaireNode.getChildren().addFirst(moins);
-
-            ArrayList<Node> newNodes = new ArrayList<> ();
-            newNodes.add(moinsUnaireNode);
-
-            return newNodes;
+            System.out.println("moinsUnaire, moinsUnaireNode : " + moinsUnaireNode);
+            return moinsUnaireNode;
         }
-        return nodes;
+        return buildParenthesisTree(nodes);
 
     }
 
 
-    private ArrayList<Node> notGesture(ArrayList<Node> nodes) {
-        System.out.println("notGesture");
-        ArrayList<Node> newNodes = new ArrayList<> ();
+
+    private Node notGesture(ArrayList<Node> nodes) {
+        if (nodes == null || nodes.size() < 2) {
+            return null;
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+            return moinsUnaire(nodes);
+        }
+
+        System.out.println("notGesture, first node : " + nodes.getFirst().getToken().getValue());
+        Node newNode = null;
         try {
-            while (!nodes.isEmpty()) {
-                Node currentNode = nodes.removeFirst();
+            if (nodes.size() > 1) {
+                Node currentNode = nodes.getFirst();
                 if (currentNode.getToken().getValue().equals("not")) {
                     Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
                     notNode.addChild(currentNode);
-                    notNode.addChild(notRecursive(nodes));
-                    newNodes.add(notNode);
+                    nodes.removeFirst(); // On enlève le not
+                    notNode.addChild(notRecursive(nodes)); // On regarde si il y a un autre not
+                    newNode = notNode;
 
                 } else {
-                    newNodes.add(currentNode);
+                    newNode = ajouterSoustraire(nodes);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return newNodes;
+        System.out.println("notGesture : " + newNode);
+        return newNode;
     }
 
 
     private Node notRecursive(ArrayList<Node> nodes) {
-        System.out.println("notRecursive");
-        if (nodes == null) {
+
+        if (nodes == null || nodes.size() < 2) {
             return null;
         }
-        Node firstNode = nodes.removeFirst(); // Not or what is just after
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+            return moinsUnaire(nodes);
+        }
+
+        System.out.println("notRecursive, first node : " + nodes.getFirst().getToken().getValue());
+        Node firstNode = nodes.getFirst(); // Not or what is just after
         if (firstNode.getToken().getValue().equals("not")) {
+            nodes.removeFirst(); // On enlève le not
             Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
             notNode.addChild(firstNode);
             notNode.addChild(notRecursive(nodes));
             return notNode;
         } else {
-            return firstNode;
+            return ajouterSoustraire(nodes);
         }
     }
+
+
+    private Node ajouterSoustraire(ArrayList<Node> nodes) {
+
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+
+
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("+")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("plus Node", new NonTerminalToken("plus Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(ajouterSoustraire(nodes));
+
+            System.out.println("ajouterSoustraire, plusNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals("-")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("moins Node", new NonTerminalToken("moins Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(ajouterSoustraire(nodes));
+
+            System.out.println("ajouterSoustraire, moinsNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return multiplierDiviserRem(nodes);
+        }
+
+    }
+
+
+    private Node multiplierDiviserRem(ArrayList<Node> nodes) {
+
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+
+
+        Node node1 = dotGesture(nodes);
+        System.out.println("multiplierDiviserRem, dotGesture result : " + node1);
+
+        if (nodes.size() <= 1) {
+            return node1;
+        }
+
+        System.out.println("multiplierDiviserRem, first node : " + nodes.getFirst().getToken().getValue());
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("*")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("multiplier Node", new NonTerminalToken("multiplier Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            return plusNode;
+        } else if (node2.getToken().getValue().equals("/")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("diviser Node", new NonTerminalToken("diviser Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            return plusNode;
+        } else if (node2.getToken().getValue().equals("rem")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("rem Node", new NonTerminalToken("rem Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            return plusNode;
+        } else {
+            return dotGesture(nodes);
+        }
+    }
+
+    private Node dotGesture(ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+
+        if (nodes.size() == 1) {
+            System.out.println("dotGesture first : " + nodes.getFirst());
+            return nodes.removeFirst();
+        }
+
+        System.out.println("dotGesture , first node : " + nodes.getFirst().getToken().getValue());
+        // Le point est un opérateur binaire
+        Node newNode = nodes.removeFirst();
+        Node currentNode = nodes.getFirst();
+
+        if (currentNode.getToken().getValue().equals(".")) { // Si le prochain token est un point sinon on retourne juste le premier token
+            Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
+            dotNode.addChild(newNode);
+            nodes.removeFirst(); // On enlève le point
+            dotNode.addChild(dotGesture(nodes));
+            newNode = dotNode;
+        }
+
+        return newNode;
+    }
+
+
 
 }
 

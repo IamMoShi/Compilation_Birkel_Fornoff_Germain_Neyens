@@ -2,6 +2,6 @@ with Ada.Text_IO ; use Ada.Text_IO ;
 
 procedure unDebut is
 begin
-    x := - not not (- not ( not a.b).c).d ;
+    x := not -(-a+(c.c + d.e));
 end unDebut ;
 

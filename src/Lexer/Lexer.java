@@ -196,7 +196,6 @@ public class Lexer {
                 } else {
                     this.newTerminalToken("-", "MINUS");
                 }
-                this.getNextChar();
                 break;
             case '*':
                 this.newTerminalToken("*", "MULTIPLY");
