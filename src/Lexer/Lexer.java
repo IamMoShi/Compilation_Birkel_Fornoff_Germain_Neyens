@@ -36,6 +36,7 @@ public class Lexer {
 
     /* GETTERS AND SETTERS ------------------------------------------------------------------------------------ */
 
+
     public void getNextChar() {
         this.positionID += 1;
         this.columnCounter += 1;
@@ -189,7 +190,12 @@ public class Lexer {
                 this.getNextChar();
                 break;
             case '-':
-                this.newTerminalToken("-", "MINUS");
+                this.getNextChar();
+                if (this.currentChar == '-') {
+                    this.skipOneLineComment();
+                } else {
+                    this.newTerminalToken("-", "MINUS");
+                }
                 this.getNextChar();
                 break;
             case '*':
@@ -225,6 +231,7 @@ public class Lexer {
         } else {
             this.newTerminalToken("<", "INFERIOR");
         }
+        this.getNextChar();
     }
 
     private void superior() {
@@ -234,6 +241,7 @@ public class Lexer {
         } else {
             this.newTerminalToken(">", "SUPERIOR");
         }
+        this.getNextChar();
     }
 
     private void assignment() {
@@ -432,16 +440,7 @@ public class Lexer {
             // Space Ada
             this.skipWhitespace();
 
-            // Comment Ada
-            if (this.currentChar == '-') {
-                this.getNextChar();
-                if (this.currentChar == '-') {
-                    this.skipOneLineComment();
-                    this.getNextChar();
-                } else {
-                    throw new LexerError(this.lineCounter, this.columnCounter, "Invalid character '" + this.currentChar + "'" + "Expected '-'");
-                }
-            }
+
             // ---------------------------------------------------------------------------------------------
 
             // Punctuation Ada ****************************************************************************

@@ -30,7 +30,7 @@ public class FileReaderUtil {
     }
 
     public static void main(String[] args) {
-        String nomFichier = "chemin/vers/votre/fichier.txt";
+        String nomFichier = "./src/Lexer/lexerTextToRead3.txt";
         String contenuFichier = lireFichier(nomFichier);
 
         if (contenuFichier.isEmpty()) {
