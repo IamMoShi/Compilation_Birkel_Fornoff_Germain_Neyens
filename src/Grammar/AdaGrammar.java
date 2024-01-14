@@ -607,8 +607,6 @@ public class AdaGrammar {
 
                 node.addChild(expressionFollow.execute());
 
-                typeTest(node, lexer, "DOT");
-                typeTest(node, lexer, "IDENTIFIER");
                 typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
@@ -629,8 +627,6 @@ public class AdaGrammar {
 
                 node.addChild(expressionFollow.execute());
 
-                typeTest(node, lexer, "DOT");
-                typeTest(node, lexer, "IDENTIFIER");
                 typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
@@ -656,8 +652,6 @@ public class AdaGrammar {
 
                 node.addChild(expressionFollow.execute());
 
-                typeTest(node, lexer, "DOT");
-                typeTest(node, lexer, "IDENTIFIER");
                 typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
@@ -789,9 +783,10 @@ public class AdaGrammar {
 
         instructionExpressionAssignment.setAction(() -> {
             System.out.println("instructionExpressionAssignment");
+            System.out.println("current Token : " + lexer.currentTokenValue());
             if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
-                Node node = new Node("instructionExpressionAssignment -> ( expression ) expressionFollow . IDENTIFIER := expression ;", instructionExpressionAssignment);
+                Node node = new Node("instructionExpressionAssignment -> ( expression ) expressionFollow := expression ;", instructionExpressionAssignment);
                 node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
                 lexer.nextToken();
@@ -805,25 +800,11 @@ public class AdaGrammar {
 
                 return node;
 
-            } else if (lexer.currentTokenType().equals("ASSIGNMENT")) {
-                print(":=");
-                Node node = new Node("instructionExpressionAssignment -> := expression ;", instructionExpressionAssignment);
-                node.setStatus(2);
-                node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
-                lexer.nextToken();
-
-                node.addChild(expression.execute());
-
-                typeTest(node, lexer, "SEMICOLON");
-                return node;
-
             } else {
-                Node node = new Node("instructionExpressionAssignment -> expressionFollow [...] ", instructionExpressionAssignment);
+                Node node = new Node("instructionExpressionAssignment -> expressionFollow := expression; ", instructionExpressionAssignment);
                 node.setStatus(2);
                 node.addChild(expressionFollow.execute());
 
-                typeTest(node, lexer, "DOT");
-                typeTest(node, lexer, "IDENTIFIER");
                 typeTest(node, lexer, "ASSIGNMENT");
 
                 node.addChild(expression.execute());
@@ -967,7 +948,7 @@ public class AdaGrammar {
             System.out.println("expressionFollow");
             if (lexer.currentTokenType().equals("DOT")) {
                 print(".");
-                Node node = new Node("expressionFollow -> . IDENTIFIER expressionAssignment", expressionFollow);
+                Node node = new Node("expressionFollow -> . IDENTIFIER expressionFollow", expressionFollow);
                 node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
                 lexer.nextToken();
@@ -1188,12 +1169,14 @@ public class AdaGrammar {
 
         Node node = axiom.execute();
         System.out.println(node);
-        Node epsilon = node.removeEpsilon();
-        System.out.println(epsilon);
-        Node useful = epsilon.removeTerminalNotUseful();
-        System.out.println(useful);
+        Node assignment = node.abstractTreeOne();
+        System.out.println(assignment);
+        // Node epsilon = node.removeEpsilon();
+        // System.out.println(epsilon);
+        // Node useful = epsilon.removeTerminalNotUseful();
+        // System.out.println(useful);
         // Node removed = epsilon.removeOneChildNodeTree();
-        //System.out.println(removed);
+        // System.out.println(removed);
         System.out.println("Test passé");
 
     }

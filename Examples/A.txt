@@ -2,7 +2,7 @@ with Ada.Text_IO ; use Ada.Text_IO ;
 
 procedure unDebut is
 begin
-    x := 1;
-    y := 2;
+    (bidule.machin).x := 1 * 2 * 3 * 4 + 5 + 6 + 7 * 8 / 9 - 10;
+    y.a.b.c := 2;
     y := 3*(x+y);
 end unDebut ;

@@ -1,6 +1,7 @@
 package Grammar;
 
 import Grammar.Token.GrammarToken;
+import Grammar.Token.NonTerminalToken;
 import Grammar.Token.TerminalToken;
 
 import java.util.ArrayList;
@@ -216,10 +217,214 @@ public class Node {
                 if (child != null) {
                     newRacine.addChild(removeOneChildNodeTree(child));
                 }
-
             }
             return newRacine;
         }
     }
 
+    public Node correctAssignment(Node currentNode) {
+        if (currentNode == null) {
+            return null;
+        }
+
+        assert currentNode.getChildren().size() >= 2;
+
+        Node gauche = currentNode.getChildren().getFirst();
+        Node droite = currentNode.getChildren().get(1);
+
+        return null;
+    }
+
+
+    public Node abstractTreeOne() {
+        return abstractTreeOne(this);
+    }
+
+    private Node abstractTreeOne(Node currentNode) {
+        if (currentNode == null) {
+            return null;
+        }
+
+        if (currentNode.getToken().getValue().equals("instruction")) {
+            return abstractTreeInstruction(currentNode);
+        }
+
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            children.add(abstractTreeOne(child));
+        }
+        currentNode.setChildren(children);
+        return currentNode;
+    }
+
+    private ArrayList<Node> copyArrayList(ArrayList<Node> arrayList) {
+        return new ArrayList<>(arrayList);
+    }
+
+    private Node abstractTreeInstruction(Node currentNode) {
+        try {
+            assert currentNode.getToken().getValue().equals("instruction");
+            if (currentNode.getRule().equals("instruction -> ( expression ) expressionFollow . IDENTIFIER := expression ;")) {
+                return abstractInstruction1(currentNode);
+            }
+            if (currentNode.getRule().equals("instruction -> IDENTIFIER instructionExpressionAssignment")) {
+                return abstractInstruction2(currentNode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    private Node abstractInstruction1(Node currentNode) {
+        Node newCurrentNode = null;
+
+        try {
+            assert currentNode.getToken().getValue().equals("instruction");
+            assert currentNode.getRule().equals("instruction -> ( expression ) expressionFollow . IDENTIFIER := expression ;");
+
+            ArrayList<Node> leftPart = new ArrayList<>();
+            ArrayList<Node> rightPart = new ArrayList<>();
+
+            ArrayList<Node> pile = new ArrayList<>();
+
+            for (Node child : currentNode.getChildren()) {
+                if (child.getToken().getValue().equals(":=")) {
+                    leftPart = copyArrayList(pile);
+                    pile = new ArrayList<>();
+                    newCurrentNode = child;
+                } else {
+                    pile.add(child);
+                }
+            }
+            rightPart = pile;
+
+            Node newLeftPart = new Node("leftPart", new NonTerminalToken("leftPart"));
+            Node newRightPart = new Node("rightPart", new NonTerminalToken("rightPart"));
+
+            newLeftPart.setChildren(leftPart);
+            newLeftPart.setChildren(assignmentExpressions(newLeftPart));
+            newRightPart.setChildren(rightPart);
+            newRightPart.setChildren(assignmentExpressions(newRightPart));
+
+            assert newCurrentNode != null;
+
+            newCurrentNode.addChild(newLeftPart);
+            newCurrentNode.addChild(newRightPart);
+
+            return newCurrentNode;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Node abstractInstruction2(Node currentNode) {
+        Node newCurrentNode = null;
+        try {
+            assert currentNode.getToken().getValue().equals("instruction");
+            assert currentNode.getRule().equals("instruction -> IDENTIFIER instructionExpressionAssignment");
+
+            ArrayList<Node> leftPart = new ArrayList<>();
+            ArrayList<Node> rightPart = new ArrayList<>();
+            ArrayList<Node> pile = new ArrayList<>();
+
+            Node firstLeft = currentNode.getChildren().getFirst();
+
+
+            assert currentNode.getChildren().size() >= 2;
+
+            currentNode = currentNode.getChildren().get(1);
+
+            for (Node child : currentNode.getChildren()) {
+                if (child.getToken().getValue().equals(":=")) {
+                    leftPart = copyArrayList(pile);
+                    leftPart.addFirst(firstLeft);
+                    pile = new ArrayList<>();
+                } else {
+                    pile.add(child);
+                }
+            }
+
+            rightPart = pile;
+
+            Node newLeftPart = new Node("leftPart", new NonTerminalToken("leftPart"));
+            Node newRightPart = new Node("rightPart", new NonTerminalToken("rightPart"));
+
+            newLeftPart.setChildren(leftPart);
+            newLeftPart.setChildren(assignmentExpressions(newLeftPart));
+            newRightPart.setChildren(rightPart);
+            newRightPart.setChildren(assignmentExpressions(newRightPart));
+
+            newCurrentNode = new Node(":=", new TerminalToken(":="));
+
+            newCurrentNode.addChild(newLeftPart);
+            newCurrentNode.addChild(newRightPart);
+
+            return newCurrentNode;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    private ArrayList<Node> assignmentExpressions(Node currentNode) {
+        if (currentNode == null) {
+            return null;
+        }
+        if (currentNode.getRule().equals("leftPart")) {
+            return assignmentExpressionsLeftPart(currentNode);
+        }
+        if (currentNode.getRule().equals("rightPart")) {
+            return assignmentExpressionsRightPart(currentNode);
+        }
+        return null;
+    }
+
+    private ArrayList<Node> assignmentExpressionsLeftPart(Node currentNode) {
+        // Ajout en profondeur des noeuds qui sont des tokens terminaux
+        if (currentNode == null) {
+            return null;
+        }
+
+        if (currentNode.getToken() instanceof TerminalToken) {
+            ArrayList<Node> children = new ArrayList<>();
+            children.add(currentNode);
+            return children;
+
+        }
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            children.addAll(assignmentExpressionsLeftPart(child));
+        }
+        return children;
+    }
+
+
+    private ArrayList<Node> assignmentExpressionsRightPart(Node currentNode) {
+        // Ajout en profondeur des noeuds qui sont des tokens terminaux
+        if (currentNode == null) {
+            return null;
+        }
+
+        if (currentNode.getToken() instanceof TerminalToken) {
+            ArrayList<Node> children = new ArrayList<>();
+            children.add(currentNode);
+            return children;
+
+        }
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            children.addAll(assignmentExpressionsRightPart(child));
+        }
+        return children;
+    }
+
 }
+
+
