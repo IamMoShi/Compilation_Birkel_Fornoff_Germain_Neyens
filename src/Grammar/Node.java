@@ -440,7 +440,7 @@ public class Node {
             case "(" -> buildParenthesisTree(nodes);
             case "-" -> moinsUnaire(nodes);
             case "not" -> notGesture(nodes);
-            default -> equalsNotEquals(nodes);
+            default -> andAndThen(nodes);
         };
     }
 
@@ -526,7 +526,7 @@ public class Node {
                     newNode = notNode;
 
                 } else {
-                    newNode = equalsNotEquals(nodes);
+                    newNode = andAndThen(nodes);
                 }
             }
         } catch (Exception e) {
@@ -556,6 +556,43 @@ public class Node {
             notNode.addChild(notRecursive(nodes));
             return notNode;
         } else {
+            return andAndThen(nodes);
+        }
+    }
+
+    private Node andAndThen(ArrayList<Node> nodes) {
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("and")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("and Node", new NonTerminalToken("and Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(andAndThen(nodes));
+
+            System.out.println("and, andNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            // remettre le premier node
+            nodes.addFirst(node1);
             return equalsNotEquals(nodes);
         }
     }
