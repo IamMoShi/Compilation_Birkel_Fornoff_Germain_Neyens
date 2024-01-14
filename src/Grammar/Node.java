@@ -436,11 +436,12 @@ public class Node {
     }
 
     private Node initializeBuildParenthesisTree(ArrayList<Node> nodes) {
+        System.out.println("initializeBuildParenthesisTree");
         return switch (nodes.getFirst().getToken().getValue()) {
             case "(" -> buildParenthesisTree(nodes);
             case "-" -> moinsUnaire(nodes);
             case "not" -> notGesture(nodes);
-            default -> andAndThen(nodes);
+            default -> orOrElse(nodes);
         };
     }
 
@@ -465,18 +466,17 @@ public class Node {
 
                 nodes.removeFirst(); // On enlève la parenthèse fermante
                 System.out.println("parenthesisTree : " + newNodes);
-                return notGesture(newNodes);
-
+                return initializeBuildParenthesisTree(newNodes);
 
             } else if (currentNode.getToken().getValue().equals(";")) {
-                return notGesture(newNodes);
+                return initializeBuildParenthesisTree(newNodes);
 
             } else {
                 newNodes.add(nodes.removeFirst());
             }
         }
 
-        return notGesture(newNodes);
+        return initializeBuildParenthesisTree(newNodes);
     }
 
     private Node moinsUnaire(ArrayList<Node> nodes) {
@@ -500,67 +500,50 @@ public class Node {
     }
 
 
-    private Node notGesture(ArrayList<Node> nodes) {
-        if (nodes == null || nodes.size() < 2) {
+
+
+
+
+    private Node orOrElse(ArrayList<Node> nodes) {
+        System.out.println("orOrElse");
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
             return null;
         }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
 
-        if (nodes.getFirst().getToken().getValue().equals("-")) {
-            return moinsUnaire(nodes);
-        }
-        if (nodes.getFirst().getToken().getValue().equals("(")) {
-            return buildParenthesisTree(nodes);
-        }
-
-
-        System.out.println("notGesture, first node : " + nodes.getFirst().getToken().getValue());
-        Node newNode = null;
-        try {
-            if (nodes.size() > 1) {
-                Node currentNode = nodes.getFirst();
-                if (currentNode.getToken().getValue().equals("not")) {
-                    Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
-                    notNode.addChild(currentNode);
-                    nodes.removeFirst(); // On enlève le not
-                    notNode.addChild(notRecursive(nodes)); // On regarde si il y a un autre not
-                    newNode = notNode;
-
-                } else {
-                    newNode = andAndThen(nodes);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("notGesture : " + newNode);
-        return newNode;
-    }
-
-
-    private Node notRecursive(ArrayList<Node> nodes) {
-
-        if (nodes == null || nodes.size() < 2) {
-            return null;
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
         }
 
-        if (nodes.getFirst().getToken().getValue().equals("-")) {
-            return moinsUnaire(nodes);
-        }
+        Node node2 = nodes.getFirst();
 
-        System.out.println("notRecursive, first node : " + nodes.getFirst().getToken().getValue());
-        Node firstNode = nodes.getFirst(); // Not or what is just after
-        if (firstNode.getToken().getValue().equals("not")) {
-            nodes.removeFirst(); // On enlève le not
-            Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
-            notNode.addChild(firstNode);
-            notNode.addChild(notRecursive(nodes));
-            return notNode;
+        if (node2.getToken().getValue().equals("or")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("or Node", new NonTerminalToken("or Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(orOrElse(nodes));
+
+            System.out.println("or, orNode : " + plusNode);
+            return plusNode;
+
         } else {
-            return andAndThen(nodes);
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return ouOuSinon(andAndThen(nodes), nodes);
         }
     }
 
     private Node andAndThen(ArrayList<Node> nodes) {
+        System.out.println("andAndThen");
         ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
@@ -584,7 +567,7 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("and Node", new NonTerminalToken("and Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
+            System.out.println("ici" + plusNode);
             plusNode.addChild(andAndThen(nodes));
 
             System.out.println("and, andNode : " + plusNode);
@@ -593,11 +576,50 @@ public class Node {
         } else {
             // remettre le premier node
             nodes.addFirst(node1);
-            return equalsNotEquals(nodes);
+            return etEtEnsuite(equalsNotEquals(nodes), nodes);
         }
     }
 
+    private Node notGesture(ArrayList<Node> nodes) {
+        if (nodes == null || nodes.size() < 2) {
+            return null;
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+            return initializeBuildParenthesisTree(nodes);
+        }
+        if (nodes.getFirst().getToken().getValue().equals("(")) {
+            return initializeBuildParenthesisTree(nodes);
+        }
+
+
+
+
+        System.out.println("notGesture, first node : " + nodes.getFirst().getToken().getValue());
+        Node newNode = null;
+        try {
+            if (nodes.size() > 1) {
+                Node currentNode = nodes.getFirst();
+                if (currentNode.getToken().getValue().equals("not")) {
+                    Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
+                    notNode.addChild(currentNode);
+                    nodes.removeFirst(); // On enlève le not
+                    notNode.addChild(initializeBuildParenthesisTree(nodes)); // On regarde si il y a un autre not
+                    newNode = notNode;
+
+                } else {
+                    newNode = orOrElse(nodes);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("notGesture : " + newNode);
+        return newNode;
+    }
+
     private Node equalsNotEquals(ArrayList<Node> nodes) {
+        System.out.println("equalsNotEquals");
         ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
@@ -640,11 +662,12 @@ public class Node {
             } else {
                 // remettre le premier node
                 nodes.addFirst(node1);
-                return inferiorSuperior(nodes);
+                return egalDifferent(inferiorSuperior(nodes), nodes);
         }
     }
 
     private Node inferiorSuperior(ArrayList<Node> nodes) {
+        System.out.println("inferiorSuperior");
         ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
@@ -707,13 +730,13 @@ public class Node {
         } else {
             // remettre le premier node
             nodes.addFirst(node1);
-            return ajouterSoustraire(nodes);
+            return inferieurSuperieur(ajouterSoustraire(nodes), nodes);
         }
     }
 
 
     private Node ajouterSoustraire(ArrayList<Node> nodes) {
-
+        System.out.println("ajouterSoustraire");
         ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
@@ -756,7 +779,8 @@ public class Node {
         } else {
             // remettre le premier node
             nodes.addFirst(node1);
-            return multiplierDiviserRem(nodes);
+
+            return additionSoustractionNode(multiplierDiviserRem(nodes), nodes);
         }
 
     }
@@ -801,7 +825,8 @@ public class Node {
             plusNode.addChild(multiplierDiviserRem(nodes));
             return plusNode;
         } else {
-            return dotGesture(nodes);
+            return node1;
+
         }
     }
 
@@ -829,6 +854,111 @@ public class Node {
         }
 
         return newNode;
+    }
+
+    private Node additionSoustractionNode(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("+")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("plus Node", new NonTerminalToken("plus Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(ajouterSoustraire(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("-")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("moins Node", new NonTerminalToken("moins Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(ajouterSoustraire(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    private Node inferieurSuperieur(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals(">")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("superior Node", new NonTerminalToken("superior Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(inferiorSuperior(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("<")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("inferior Node", new NonTerminalToken("inferior Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else if (nodes.getFirst().getToken().getValue().equals(">=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("superiorEquals Node", new NonTerminalToken("superiorEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("<=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("inferiorEquals Node", new NonTerminalToken("inferiorEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    private Node egalDifferent(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("=")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(equalsNotEquals(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("/=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(equalsNotEquals(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    private Node etEtEnsuite(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("and")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("and Node", new NonTerminalToken("and Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(andAndThen(nodes));
+            return plusNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    private Node ouOuSinon(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("or")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("or Node", new NonTerminalToken("or Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(orOrElse(nodes));
+            return plusNode;
+        } else {
+            return filsGauche;
+        }
     }
 
 
