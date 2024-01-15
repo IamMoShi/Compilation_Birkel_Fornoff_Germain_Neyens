@@ -440,7 +440,6 @@ public class Node {
         return switch (nodes.getFirst().getToken().getValue()) {
             case "(" -> buildParenthesisTree(nodes);
             case "-" -> moinsUnaire(nodes);
-            case "not" -> notGesture(nodes);
             default -> orOrElse(nodes);
         };
     }
@@ -500,13 +499,9 @@ public class Node {
     }
 
 
-
-
-
-
     private Node orOrElse(ArrayList<Node> nodes) {
         System.out.println("orOrElse");
-        ArrayList<Node> newNodes = new ArrayList<>();
+
 
         if (nodes == null || nodes.isEmpty()) {
             System.out.println("ajouterSoustraire, nodes is empty");
@@ -544,7 +539,7 @@ public class Node {
 
     private Node andAndThen(ArrayList<Node> nodes) {
         System.out.println("andAndThen");
-        ArrayList<Node> newNodes = new ArrayList<>();
+
 
         if (nodes == null || nodes.isEmpty()) {
             System.out.println("ajouterSoustraire, nodes is empty");
@@ -576,7 +571,7 @@ public class Node {
         } else {
             // remettre le premier node
             nodes.addFirst(node1);
-            return etEtEnsuite(equalsNotEquals(nodes), nodes);
+            return etEtEnsuite(notGesture(nodes), nodes);
         }
     }
 
@@ -592,35 +587,17 @@ public class Node {
             return initializeBuildParenthesisTree(nodes);
         }
 
-
-
-
-        System.out.println("notGesture, first node : " + nodes.getFirst().getToken().getValue());
-        Node newNode = null;
-        try {
-            if (nodes.size() > 1) {
-                Node currentNode = nodes.getFirst();
-                if (currentNode.getToken().getValue().equals("not")) {
-                    Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
-                    notNode.addChild(currentNode);
-                    nodes.removeFirst(); // On enlève le not
-                    notNode.addChild(initializeBuildParenthesisTree(nodes)); // On regarde si il y a un autre not
-                    newNode = notNode;
-
-                } else {
-                    newNode = orOrElse(nodes);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (nodes.getFirst().getToken().getValue().equals("not")) {
+            Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
+            notNode.addChild(nodes.removeFirst());
+            notNode.addChild(notGesture(nodes));
+            return notNode;
         }
-        System.out.println("notGesture : " + newNode);
-        return newNode;
+        return equalsNotEquals(nodes);
     }
 
     private Node equalsNotEquals(ArrayList<Node> nodes) {
         System.out.println("equalsNotEquals");
-        ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
             System.out.println("ajouterSoustraire, nodes is empty");
@@ -640,29 +617,33 @@ public class Node {
 
         if (node2.getToken().getValue().equals("=")) {
 
-                nodes.removeFirst();
-                Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
-                plusNode.addChild(node1);
-                System.out.println(plusNode);
-                plusNode.addChild(equalsNotEquals(nodes));
+            nodes.removeFirst();
+            Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(equalsNotEquals(nodes));
 
-                System.out.println("equals, equalsNode : " + plusNode);
-                return plusNode;
+            System.out.println("equals, equalsNode : " + plusNode);
+            return plusNode;
 
-            } else if (node2.getToken().getValue().equals("/=")) {
+        } else if (node2.getToken().getValue().equals("/=")) {
 
-                nodes.removeFirst();
-                Node plusNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
-                plusNode.addChild(node1);
-                plusNode.addChild(equalsNotEquals(nodes));
+            nodes.removeFirst();
+            Node plusNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(equalsNotEquals(nodes));
 
-                System.out.println("notEquals, notEqualsNode : " + plusNode);
-                return plusNode;
+            System.out.println("notEquals, notEqualsNode : " + plusNode);
+            return plusNode;
 
-            } else {
-                // remettre le premier node
+        } else {
+            if (node1.getToken().getValue().equals("not")) {
                 nodes.addFirst(node1);
-                return egalDifferent(inferiorSuperior(nodes), nodes);
+                return notGesture(nodes);
+            }
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return egalDifferent(inferiorSuperior(nodes), nodes);
         }
     }
 
@@ -728,6 +709,10 @@ public class Node {
             return plusNode;
 
         } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
             // remettre le premier node
             nodes.addFirst(node1);
             return inferieurSuperieur(ajouterSoustraire(nodes), nodes);
@@ -777,6 +762,10 @@ public class Node {
             return plusNode;
 
         } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
             // remettre le premier node
             nodes.addFirst(node1);
 
@@ -825,6 +814,10 @@ public class Node {
             plusNode.addChild(multiplierDiviserRem(nodes));
             return plusNode;
         } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
             return node1;
 
         }

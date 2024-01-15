@@ -2,7 +2,6 @@ with Ada.Text_IO ; use Ada.Text_IO ;
 
 procedure unDebut is
 begin
-     -- x :=  not a * b - c < d = e and f or g ;
-    y := a and b or c;
+    y := a + b + c;
 end unDebut ;
 
