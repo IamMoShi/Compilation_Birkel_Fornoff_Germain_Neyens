@@ -165,9 +165,21 @@ public class Node {
                 if (!declarations.isEmpty()) {
                     children.addAll(declarations);
                 }
+            } else if (this.getChildren().getFirst().getRule().equals("declarationStar -> Epsilon")) {
+                this.getChildren().removeFirst();
             }
 
+            // Suppression du begin
+            this.getChildren().removeFirst();
+
+            // Gestion des instructions
+            Node instructionsNode = instructions(this.getChildren().removeFirst());
+            if (instructionsNode != null) children.add(instructionsNode);
+
             this.setChildren(children);
+
+
+            // TODO
 
             // ---------------------------------------------------------------------------------------------
             System.out.println("-".repeat(50));
@@ -602,8 +614,10 @@ public class Node {
         Node newInstructionNode = new Node("instructions", new NonTerminalToken("instructions"));
 
         if (instructionNode.getChildren().size() == 2) {
-            newInstructionNode.addChild(instructionNode.getChildren().removeFirst());
-            newInstructionNode.addChild(instructionExpressionAssignment(instructionNode.getChildren().removeFirst()));
+            Node leftPart = instructionNode.getChildren().removeFirst(); // TODO
+            Node assignment = instructionExpressionAssignment(instructionNode.getChildren().removeFirst());
+            assignment.addChild(leftPart);
+            newInstructionNode.addChild(assignment);
             return newInstructionNode;
         }
 
@@ -858,7 +872,7 @@ public class Node {
 
     private Node else0or1(Node else0or1Node) {
 
-        if(else0or1Node == null || else0or1Node.getChildren().isEmpty()) {
+        if (else0or1Node == null || else0or1Node.getChildren().isEmpty()) {
             return null;
         }
 
@@ -891,14 +905,80 @@ public class Node {
     }
 
     private Node instructionExpressionAssignment(Node instructionExpressionAssignmentNode) {
-        // TODO
+
+        if (instructionExpressionAssignmentNode == null || instructionExpressionAssignmentNode.getChildren().isEmpty()) {
+            return null;
+        }
+
+        if (instructionExpressionAssignmentNode.getChildren().size() == 5)
+            return callFunction(instructionExpressionAssignmentNode);
+
         return null;
     }
 
+    private Node callFunction(Node callFunctionNode) {
+        if (callFunctionNode == null || callFunctionNode.getChildren().isEmpty()) {
+            return null;
+        }
+
+        if (callFunctionNode.getChildren().size() != 5) return callFunctionNode;
+
+        // Suppression de la parenthèse ouvrante
+        callFunctionNode.getChildren().removeFirst();
+        // Récupération de l'expression
+        Node expressionNode = callFunctionNode.getChildren().removeFirst();
+        // Récupération de l'expressionCommaPlus
+        Node expressionCommaPlusNode = callFunctionNode.getChildren().removeFirst();
+        // Suppression de la parenthèse fermante
+        callFunctionNode.getChildren().removeFirst();
+        // Récupération d'instructionAssignment
+        Node instructionAssignmentNode = callFunctionNode.getChildren().removeFirst();
+
+        Node newCallFunctionNode = new Node("callFunction", new NonTerminalToken("callFunction"));
+
+        Node expression = expression(expressionNode);
+        if (expression != null) {
+            newCallFunctionNode.addChild(expression);
+        }
+
+        ArrayList<Node> expressions = expressionCommaPlus(expressionCommaPlusNode);
+        if (!expressions.isEmpty()) {
+            newCallFunctionNode.getChildren().addAll(expressions);
+        }
+
+        Node instructionAssignment = instructionExpressionAssignment(instructionAssignmentNode);
+        if (instructionAssignment != null) {
+            newCallFunctionNode.addChild(instructionAssignment);
+        }
+
+        return newCallFunctionNode;
+    }
 
 
     // -----------------------------------------------------------------------------------------------------------------
 
+
+    private ArrayList<Node> expressionCommaPlus(Node expressionCommaPlusNode) {
+
+        if (expressionCommaPlusNode == null || expressionCommaPlusNode.getChildren().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        if (expressionCommaPlusNode.getChildren().size() != 3) return new ArrayList<>();
+
+        // 1 Suppression de la virgule
+        expressionCommaPlusNode.getChildren().removeFirst();
+        // 2 Récupération de l'expression
+        Node expressionNode = expressionCommaPlusNode.getChildren().removeFirst();
+        // 3 Récupération de l'expressionCommaPlus
+        Node expressionCommaPlusNode2 = expressionCommaPlusNode.getChildren().removeFirst();
+
+        ArrayList<Node> expressions = new ArrayList<>();
+        expressions.add(expression(expressionNode));
+        expressions.addAll(expressionCommaPlus(expressionCommaPlusNode2));
+
+        return expressions;
+    }
 
     private Node expression0or1(Node expression0or1Node) {
         // TODO
@@ -906,9 +986,20 @@ public class Node {
     }
 
     private Node expression(Node expressionsNode) {
+
+        if (expressionsNode == null || expressionsNode.getChildren().isEmpty()) {
+            return null;
+        }
+
         // TODO
+
         return null;
     }
+
+
+
+
+
 
 
     // -----------------------------------------------------------------------------------------------------------------
