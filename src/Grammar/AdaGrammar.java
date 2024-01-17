@@ -4,7 +4,37 @@ import Grammar.Token.NonTerminalToken;
 import Grammar.Token.TerminalToken;
 import Lexer.Lexer;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class AdaGrammar {
+
+    /* à décommenter
+    private StringBuilder dotBuilder = new StringBuilder();
+
+    public AdaGrammar() {
+        dotBuilder.append("digraph monArbre {\nrankdir=TB;\n");
+    }
+
+    private Node createNode(String rule, NonTerminalToken token) {
+        Node node = new Node(rule, token);
+        dotBuilder.append("    \"" + rule + "\" [label=\"" + rule + "\"];\n");
+        return node;
+    }
+    private void addChildNode(Node parent, Node child) {
+        parent.addChild(child);
+        dotBuilder.append("    \"" + parent.getRule() + "\" -> \"" + child.getRule() + "\";\n");
+    }
+    public void finishDotFile() {
+        dotBuilder.append("}\n");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("monArbre.dot"))) {
+            writer.write(dotBuilder.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+     */
 
     private void print(String s) {
         System.out.println("---" + s);
@@ -16,6 +46,7 @@ public class AdaGrammar {
             node.addFailedExplanation("Expected '" + value + "' ; line : " + lexer.getCurrentToken().getLine());
         } else {
             node.addChild(new Node(lexer.getCurrentToken().getValue(), lexer.getCurrentToken()));
+            //addChildNode(node, createNode(lexer.getCurrentToken().getValue(), new NonTerminalToken(lexer.getCurrentToken().getValue())));
             lexer.nextToken();
         }
         print(value);
@@ -27,6 +58,7 @@ public class AdaGrammar {
             node.addFailedExplanation("Expected '" + type + "' ; line : " + lexer.getCurrentToken().getLine());
         } else {
             node.addChild(new Node(lexer.getCurrentToken().getValue(), lexer.getCurrentToken()));
+            //addChildNode(node, createNode(lexer.getCurrentToken().getValue(), new NonTerminalToken(lexer.getCurrentToken().getValue())));
             lexer.nextToken();
         }
         print(type);
@@ -102,6 +134,7 @@ public class AdaGrammar {
         axiom.setAction(() -> {
             System.out.println("axiom");
             Node node = new Node("axiom -> with Ada.Text_IO; use Ada.Text_IO; ...", axiom);
+            //Node nodeaxiom = createNode("axiom -> with Ada.Text_IO; use Ada.Text_IO; ...", axiom);
 
             valueTest(node, lexer, "with");
             valueTest(node, lexer, "Ada");
@@ -118,13 +151,16 @@ public class AdaGrammar {
             valueTest(node, lexer, "is");
             //
             node.addChild(declarationStar.execute());
+            //addChildNode(nodeaxiom, createNode("declarationStar", declarationStar));
             //
             valueTest(node, lexer, "begin");
             //
 
             try {
                 node.addChild(instruction.execute());
+                //addChildNode(nodeaxiom, createNode("instruction", instruction));
                 node.addChild(instructionPlus.execute());
+                //addChildNode(nodeaxiom, createNode("instructionPlus", instructionPlus));
             } catch (Exception e) {
 
             }
@@ -132,6 +168,8 @@ public class AdaGrammar {
             valueTest(node, lexer, "end");
             //
             node.addChild(identificator0or1.execute());
+            //addChildNode(nodeaxiom, createNode("identificator0or1", identificator0or1));
+
             //
             typeTest(node, lexer, "SEMICOLON");
 
@@ -143,9 +181,13 @@ public class AdaGrammar {
             // Try to do rules D and F1 else do nothing
             try {
                 Node node = new Node("declarationStar -> declaration declarationStar", declarationStar);
+                //Node nodedeclarationstar = createNode("declarationStar -> declaration declarationStar", declarationStar);
+
                 node.setStatus(2);
                 node.addChild(declaration.execute());
+                //addChildNode(nodedeclarationstar, createNode("declaration", declaration));
                 node.addChild(declarationStar.execute());
+                //addChildNode(nodedeclarationstar, createNode("declarationStar", declarationStar));
                 return node;
             } catch (Exception e) {
                 System.out.println("catch F1");
@@ -160,6 +202,8 @@ public class AdaGrammar {
                 print("type");
 
                 Node node = new Node("declaration -> type IDENTIFIER declarationFact1", declaration);
+                //Node nodedeclaration = createNode("declaration -> type IDENTIFIER declarationFact1", declaration);
+
                 node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
                 lexer.nextToken();
