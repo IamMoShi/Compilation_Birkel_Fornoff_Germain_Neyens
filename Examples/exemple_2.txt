@@ -15,6 +15,6 @@ choix : integer ;
         choix := 2.1;
         if choix = 1
             then valeur := perimetreRectangle(2, 3) ;
-            else valeur := aireRectangale(2, 3) ;
+            else valeur := aireRectangle(2, 3) ;
         end if;
     end unDebut ;

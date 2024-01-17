@@ -687,7 +687,7 @@ public class AdaGrammar {
                 node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
                 lexer.nextToken();
 
-                node.addChild(expression.execute());
+                node.addChild(expression0or1.execute());
 
                 typeTest(node, lexer, "SEMICOLON");
                 return node;

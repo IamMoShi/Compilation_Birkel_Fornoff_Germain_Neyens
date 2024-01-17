@@ -384,7 +384,7 @@ public class Lexer {
                 this.getNextChar();
                 return;
             } else {
-                word.append(this.currentChar);
+                word.append(currentChar);
             }
 
         } else if (!word.isEmpty()) {
@@ -398,7 +398,6 @@ public class Lexer {
             word.append(this.currentChar);
             this.getNextChar();
         }
-
 
 
         if (word.length() > 1) {

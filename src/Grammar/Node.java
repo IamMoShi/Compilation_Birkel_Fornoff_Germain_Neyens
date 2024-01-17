@@ -176,10 +176,26 @@ public class Node {
             Node instructionsNode = instructions(this.getChildren().removeFirst());
             if (instructionsNode != null) children.add(instructionsNode);
 
+            // Récupération de instructionPlus
+            Node instructionPlusNode = this.getChildren().removeFirst();
+
+            children.addAll(this.instructionsPlus(instructionPlusNode));
+
+            // Suppression du end
+            this.getChildren().removeFirst();
+
+            // Récupération de l'identificateur0ou1
+            if (!this.getChildren().getFirst().getRule().equals("identificator0or1 -> Epsilon")) {
+                children.add(this.getChildren().removeFirst().getChildren().getFirst());
+            } else {
+                this.getChildren().removeFirst();
+            }
+
+            // Suppression du ;
+            this.getChildren().removeFirst();
+
             this.setChildren(children);
 
-
-            // TODO
 
             // ---------------------------------------------------------------------------------------------
             System.out.println("-".repeat(50));
@@ -321,10 +337,17 @@ public class Node {
             assert expressionAssignementNode.getChildren().size() == 2;
 
             Node assignementNode = new Node("ASSIGNMENT", new NonTerminalToken(":="));
+            expressionAssignementNode.getChildren().removeFirst();
             // Ajoute la partie de déclaration à l'assignement
             assignementNode.addChild(newDeclaration);
             // Ajoute l'expression à assigner
-            // TODO
+            Node expressionNode = expression(expressionAssignementNode.getChildren().removeFirst());
+            if (expressionNode.getToken().getValue().equals("expression")) {
+                assignementNode.addChild(initializeBuildParenthesisTree(expressionNode.getChildren()));
+            } else {
+                assignementNode.addChild(expressionNode);
+            }
+
 
             return assignementNode;
         }
@@ -622,6 +645,7 @@ public class Node {
         }
 
         if (instructionNode.getChildren().size() == 3) {
+            System.out.println("instructionNode.getChildren().size() == 3 -----------------------------------------");
             // Suppression de return
             instructionNode.getChildren().removeFirst();
             // Expression0or1
@@ -708,8 +732,6 @@ public class Node {
         if (expressionsNode != null) {
             newInstructionForNode.addChild(expressionsNode);
         }
-
-        newInstructionForNode.addChild(expressionNode2);
 
         Node expressionsNode2 = expression(expressionNode2);
         if (expressionsNode2 != null) {
@@ -900,20 +922,66 @@ public class Node {
     }
 
     private ArrayList<Node> instructionsPlus(Node instructionPlusNode) {
-        // TODO
-        return new ArrayList<>();
+        if (instructionPlusNode == null || instructionPlusNode.getChildren().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        if (instructionPlusNode.getChildren().size() != 2) return new ArrayList<>();
+
+        // 1 Récupération de l'instruction
+        Node instructionNode = instructionPlusNode.getChildren().removeFirst();
+        // 2 Récupération de l'instructionPlus
+        Node instructionPlusNode2 = instructionPlusNode.getChildren().removeFirst();
+
+        ArrayList<Node> instructionsList = new ArrayList<>();
+        Node tmps = instructions(instructionNode);
+        if (tmps != null) {
+            instructionsList.add(tmps);
+        }
+
+        if (!instructionPlusNode2.getChildren().isEmpty()) {
+            instructionsList.addAll(instructionsPlus(instructionPlusNode2));
+        }
+
+
+        return instructionsList;
     }
 
     private Node instructionExpressionAssignment(Node instructionExpressionAssignmentNode) {
 
-        if (instructionExpressionAssignmentNode == null || instructionExpressionAssignmentNode.getChildren().isEmpty()) {
+        if (instructionExpressionAssignmentNode == null) {
             return null;
+        }
+
+        if (instructionExpressionAssignmentNode.getChildren().isEmpty()) {
+            return instructionExpressionAssignmentNode;
         }
 
         if (instructionExpressionAssignmentNode.getChildren().size() == 5)
             return callFunction(instructionExpressionAssignmentNode);
 
-        return null;
+        if (instructionExpressionAssignmentNode.getChildren().size() != 4) return null;
+
+        // TODO : expressionFollow
+        Node expressionFollowNode = instructionExpressionAssignmentNode.getChildren().removeFirst();
+
+        // Récupération de :=
+        Node assignementNode = new Node("ASSIGNMENT", new NonTerminalToken(":="));
+        instructionExpressionAssignmentNode.getChildren().removeFirst();
+
+        // Récupération de l'expression
+        Node expressionNode = expression(instructionExpressionAssignmentNode.getChildren().removeFirst());
+        if (expressionNode.getRule().equals("expression")) {
+            assignementNode.addChild(initializeBuildParenthesisTree(expressionNode.getChildren()));
+        } else {
+            assignementNode.addChild(expressionNode);
+        }
+
+
+        // Suppression du ;
+        instructionExpressionAssignmentNode.getChildren().removeFirst();
+
+        return assignementNode;
     }
 
     private Node callFunction(Node callFunctionNode) {
@@ -932,23 +1000,36 @@ public class Node {
         // Suppression de la parenthèse fermante
         callFunctionNode.getChildren().removeFirst();
         // Récupération d'instructionAssignment
-        Node instructionAssignmentNode = callFunctionNode.getChildren().removeFirst();
+        Node expressionFollowNode = callFunctionNode.getChildren().removeFirst();
 
         Node newCallFunctionNode = new Node("callFunction", new NonTerminalToken("callFunction"));
 
         Node expression = expression(expressionNode);
+        System.out.println("expressions ---------------------------------" + expression);
         if (expression != null) {
-            newCallFunctionNode.addChild(expression);
+            Node tmp = expression;
+            if (tmp.getToken().getValue().equals("expression")) {
+                newCallFunctionNode.addChild(initializeBuildParenthesisTree(tmp.getChildren()));
+            } else {
+                newCallFunctionNode.addChild(tmp);
+            }
+
         }
 
+
         ArrayList<Node> expressions = expressionCommaPlus(expressionCommaPlusNode);
+
         if (!expressions.isEmpty()) {
             newCallFunctionNode.getChildren().addAll(expressions);
         }
 
-        Node instructionAssignment = instructionExpressionAssignment(instructionAssignmentNode);
-        if (instructionAssignment != null) {
-            newCallFunctionNode.addChild(instructionAssignment);
+        if (expressionFollowNode.getToken().getValue().equals("instructionAssignment") && expressionFollowNode.getChildren().size() == 4) {
+            // TODO
+            newCallFunctionNode.addChild(expressionFollowNode);
+
+        } else if (expressionFollowNode.getToken().getValue().equals("expressionFollow") && !expressionFollowNode.getChildren().isEmpty()) {
+            // TODO
+            newCallFunctionNode.addChild(expressionFollowNode);
         }
 
         return newCallFunctionNode;
@@ -974,15 +1055,18 @@ public class Node {
         Node expressionCommaPlusNode2 = expressionCommaPlusNode.getChildren().removeFirst();
 
         ArrayList<Node> expressions = new ArrayList<>();
-        expressions.add(expression(expressionNode));
+        expressions.add(initializeBuildParenthesisTree(expressionNode.getChildren()));
         expressions.addAll(expressionCommaPlus(expressionCommaPlusNode2));
 
         return expressions;
     }
 
     private Node expression0or1(Node expression0or1Node) {
-        // TODO
-        return null;
+        if (expression0or1Node == null || expression0or1Node.getChildren().isEmpty()) {
+            return null;
+        }
+
+        return expression(expression0or1Node.getChildren().removeFirst());
     }
 
     private Node expression(Node expressionsNode) {
@@ -991,18 +1075,35 @@ public class Node {
             return null;
         }
 
+        if (expressionsNode.getChildren().size() == 4) {
+            Node newExpressionNode = new Node("expression", new NonTerminalToken("expression"));
+
+            expressionsNode.getChildren().removeFirst();
+            Node expressionNode = expression(expressionsNode.getChildren().removeFirst());
+
+            expressionNode = initializeBuildParenthesisTree(expressionNode.getChildren());
+
+            newExpressionNode.addChild(expressionNode); // Expression
+            expressionsNode.getChildren().removeFirst(); // Deuxième parenthèse
+
+            newExpressionNode.getChildren().addAll(modificationTreeExpression(expressionsNode.getChildren().removeFirst()));
+            return newExpressionNode;
+        }
+
         if (expressionsNode.getChildren().size() == 2) {
 
-            if (expressionsNode.getChildren().getLast().getChildren().size() == 5) {
+            if (!expressionsNode.getChildren().isEmpty() && expressionsNode.getChildren().getLast().getChildren().size() == 5) {
                 Node expressionFactNode = expressionsNode.getChildren().getLast();
                 Node callFunctionNode = callFunction(expressionFactNode);
-                callFunctionNode.getChildren().addFirst(expressionsNode.getChildren().removeFirst()); // TODO
+                System.out.println("callFunctionNode ---------------------------------" + callFunctionNode);
+                callFunctionNode.getChildren().addFirst(expressionsNode.getChildren().removeFirst());
                 return callFunctionNode;
 
             }
-
+            ArrayList<Node> expressionList = modificationTreeExpression(expressionsNode);
             Node expressionNode = new Node("expression", new NonTerminalToken("expression"));
-            expressionNode.setChildren(modificationTreeExpression(expressionsNode));
+            expressionNode.setChildren(expressionList);
+
             return expressionNode;
         }
 
@@ -1012,28 +1113,30 @@ public class Node {
 
 
     private ArrayList<Node> modificationTreeExpression(Node expressionsModifications) {
+        System.out.println("modificationTreeExpression");
         if (expressionsModifications == null) {
             return null;
-        }
-
-        if (expressionsModifications.getChildren().isEmpty()) {
-            ArrayList<Node> children = new ArrayList<>();
-            children.add(expressionsModifications);
-            return children;
         }
 
         ArrayList<Node> children = new ArrayList<>();
 
         for (Node child : expressionsModifications.getChildren()) {
             if (child.getToken().getValue().equals("expression")) {
-                children.add(expression(child));
-            } else if (child.getToken() instanceof TerminalToken || !child.getChildren().isEmpty()) {
+
+                Node ExpressionNode = expression(child);
+
+                if (ExpressionNode.getRule().equals("expression")) {
+                    children.addAll(ExpressionNode.getChildren());
+                } else {
+                    children.add(ExpressionNode);
+                }
+            } else if (!child.getChildren().isEmpty()) {
                 children.addAll(modificationTreeExpression(child));
+            } else if (child.getToken() instanceof TerminalToken) {
+                children.add(child);
             }
         }
 
-        Node expressionNode = new Node("expression", new NonTerminalToken("expression"));
-        System.out.println(initializeBuildParenthesisTree(children));
 
         return children;
     }
@@ -1045,6 +1148,9 @@ public class Node {
 
     private Node initializeBuildParenthesisTree(ArrayList<Node> nodes) {
         System.out.println("initializeBuildParenthesisTree");
+        if (nodes.size() == 1) {
+            return nodes.getFirst();
+        }
         return switch (nodes.getFirst().getToken().getValue()) {
             case "(" -> buildParenthesisTree(nodes);
             case "-" -> moinsUnaire(nodes);
@@ -1055,32 +1161,30 @@ public class Node {
     // --------------------------------------------------------
 
     private Node buildParenthesisTree(ArrayList<Node> nodes) {
-        System.out.println("buildParenthesisTree");
+
 
         ArrayList<Node> newNodes = new ArrayList<>();
 
         while (!nodes.isEmpty()) {
             Node currentNode = nodes.getFirst();
-            System.out.println("parenthesis currentNode : " + currentNode);
+
             if (currentNode.getToken().getValue().equals("(")) {
 
                 nodes.removeFirst();
 
                 Node parenthesisNode = new Node("parenthesis", new NonTerminalToken("parenthesis"));
                 Node node = moinsUnaire(nodes);
-                System.out.println("parenthesisTree ( : " + node);
+
                 parenthesisNode.addChild(node); // On construit l'arbre de la parenthèse
-                System.out.println("parenthesisNode : " + parenthesisNode);
-                System.out.println("Nodes : " + nodes);
+
                 newNodes.add(parenthesisNode);
-                System.out.println("newNodes : " + newNodes);
+
 
             } else if (currentNode.getToken().getValue().equals(")")) {
 
                 nodes.removeFirst(); // On enlève la parenthèse fermante
-                System.out.println("parenthesisTree : " + newNodes);
+
                 Node node = initializeBuildParenthesisTree(newNodes);
-                System.out.println("parenthesisTree ) : " + node);
                 return node;
 
             } else if (currentNode.getToken().getValue().equals(";")) {
@@ -1088,7 +1192,7 @@ public class Node {
                 return initializeBuildParenthesisTree(newNodes);
 
             } else {
-                System.out.println("parenthesisTree else : " + nodes);
+
                 newNodes.add(nodes.removeFirst());
             }
         }
@@ -1099,9 +1203,8 @@ public class Node {
     // --------------------------------------------------------
 
     private Node moinsUnaire(ArrayList<Node> nodes) {
-        System.out.println("moinsUnaire");
+
         if (nodes.isEmpty()) {
-            System.out.println("moinsUnaire, nodes is empty");
             return null;
         }
 
@@ -1111,7 +1214,6 @@ public class Node {
             Node moins = nodes.removeFirst();
             moinsUnaireNode.addChild(buildParenthesisTree(nodes));
             moinsUnaireNode.getChildren().addFirst(moins);
-            System.out.println("moinsUnaire, moinsUnaireNode : " + moinsUnaireNode);
             return moinsUnaireNode;
         }
         return buildParenthesisTree(nodes);
@@ -1125,7 +1227,7 @@ public class Node {
 
 
         if (nodes == null || nodes.isEmpty()) {
-            System.out.println("ajouterSoustraire, nodes is empty");
+
             // Pour éviter de planter
             return null;
         }
@@ -1133,7 +1235,6 @@ public class Node {
         Node node1 = dotGesture(nodes);
 
         if (nodes.size() <= 1) {
-            System.out.println("plus rien à faire");
             // Il n'y a plus d'opération à faire
             return node1;
         }
@@ -1145,10 +1246,9 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("or Node", new NonTerminalToken("or Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
+
             plusNode.addChild(orOrElse(nodes));
 
-            System.out.println("or, orNode : " + plusNode);
             return plusNode;
 
         } else {
@@ -1165,7 +1265,7 @@ public class Node {
 
 
         if (nodes == null || nodes.isEmpty()) {
-            System.out.println("ajouterSoustraire, nodes is empty");
+
             // Pour éviter de planter
             return null;
         }
@@ -1173,7 +1273,7 @@ public class Node {
         Node node1 = dotGesture(nodes);
 
         if (nodes.size() <= 1) {
-            System.out.println("plus rien à faire");
+
             // Il n'y a plus d'opération à faire
             return node1;
         }
@@ -1185,10 +1285,9 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("and", new NonTerminalToken("and Node"));
             plusNode.addChild(node1);
-            System.out.println("ici" + plusNode);
+
             plusNode.addChild(andAndThen(nodes));
 
-            System.out.println("and, andNode : " + plusNode);
             return plusNode;
 
         } else {
@@ -1227,7 +1326,7 @@ public class Node {
         System.out.println("equalsNotEquals");
 
         if (nodes == null || nodes.isEmpty()) {
-            System.out.println("ajouterSoustraire, nodes is empty");
+
             // Pour éviter de planter
             return null;
         }
@@ -1235,7 +1334,6 @@ public class Node {
         Node node1 = dotGesture(nodes);
 
         if (nodes.size() <= 1) {
-            System.out.println("plus rien à faire");
             // Il n'y a plus d'opération à faire
             return node1;
         }
@@ -1247,10 +1345,8 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
             plusNode.addChild(equalsNotEquals(nodes));
 
-            System.out.println("equals, equalsNode : " + plusNode);
             return plusNode;
 
         } else if (node2.getToken().getValue().equals("/=")) {
@@ -1260,7 +1356,6 @@ public class Node {
             plusNode.addChild(node1);
             plusNode.addChild(equalsNotEquals(nodes));
 
-            System.out.println("notEquals, notEqualsNode : " + plusNode);
             return plusNode;
 
         } else {
@@ -1289,7 +1384,6 @@ public class Node {
         Node node1 = dotGesture(nodes);
 
         if (nodes.size() <= 1) {
-            System.out.println("plus rien à faire");
             // Il n'y a plus d'opération à faire
             return node1;
         }
@@ -1301,10 +1395,9 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("superior Node", new NonTerminalToken("superior Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
+
             plusNode.addChild(inferiorSuperior(nodes));
 
-            System.out.println("superior, superiorNode : " + plusNode);
             return plusNode;
 
         } else if (node2.getToken().getValue().equals("<")) {
@@ -1314,7 +1407,6 @@ public class Node {
             plusNode.addChild(node1);
             plusNode.addChild(inferiorSuperior(nodes));
 
-            System.out.println("inferior, inferiorNode : " + plusNode);
             return plusNode;
 
         } else if (node2.getToken().getValue().equals(">=")) {
@@ -1324,7 +1416,6 @@ public class Node {
             plusNode.addChild(node1);
             plusNode.addChild(inferiorSuperior(nodes));
 
-            System.out.println("superiorEquals, superiorEqualsNode : " + plusNode);
             return plusNode;
 
         } else if (node2.getToken().getValue().equals("<=")) {
@@ -1334,7 +1425,6 @@ public class Node {
             plusNode.addChild(node1);
             plusNode.addChild(inferiorSuperior(nodes));
 
-            System.out.println("inferiorEquals, inferiorEqualsNode : " + plusNode);
             return plusNode;
 
         } else {
@@ -1354,7 +1444,7 @@ public class Node {
         System.out.println("ajouterSoustraire");
 
         if (nodes == null || nodes.isEmpty()) {
-            System.out.println("ajouterSoustraire, nodes is empty");
+
             // Pour éviter de planter
             return null;
         }
@@ -1362,7 +1452,6 @@ public class Node {
         Node node1 = dotGesture(nodes);
 
         if (nodes.size() <= 1) {
-            System.out.println("plus rien à faire");
             // Il n'y a plus d'opération à faire
             return node1;
         }
@@ -1374,10 +1463,8 @@ public class Node {
             nodes.removeFirst();
             Node plusNode = new Node("plus", new NonTerminalToken("plus Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
             plusNode.addChild(ajouterSoustraire(nodes));
 
-            System.out.println("ajouterSoustraire, plusNode : " + plusNode);
             return plusNode;
 
         } else if (node2.getToken().getValue().equals("-")) {
@@ -1387,7 +1474,6 @@ public class Node {
             plusNode.addChild(node1);
             plusNode.addChild(ajouterSoustraire(nodes));
 
-            System.out.println("ajouterSoustraire, moinsNode : " + plusNode);
             return plusNode;
 
         } else {
@@ -1398,7 +1484,6 @@ public class Node {
 
             // remettre le premier node
             nodes.addFirst(node1);
-            System.out.println("ajouterSoustraire Else, nodes : " + nodes);
             return additionSoustractionNode(multiplierDiviserRem(nodes), nodes);
         }
 
@@ -1419,7 +1504,6 @@ public class Node {
             return node1;
         }
 
-        System.out.println("multiplierDiviserRem, first node : " + nodes.getFirst().getToken().getValue());
         Node node2 = nodes.getFirst();
 
         if (node2.getToken().getValue().equals("*")) {
@@ -1427,10 +1511,7 @@ public class Node {
 
             Node plusNode = new Node("fois", new NonTerminalToken("multiplier Node"));
             plusNode.addChild(node1);
-            System.out.println(plusNode);
             plusNode.addChild(multiplierDiviserRem(nodes));
-            System.out.println("multiplierDiviserRem, multiplierNode : " + plusNode);
-            System.out.println("nodes : " + nodes);
             return plusNode;
         } else if (node2.getToken().getValue().equals("/")) {
             nodes.removeFirst();
@@ -1464,11 +1545,9 @@ public class Node {
         }
 
         if (nodes.size() == 1) {
-            System.out.println("dotGesture first : " + nodes.getFirst());
             return nodes.removeFirst();
         }
 
-        System.out.println("dotGesture , first node : " + nodes.getFirst());
         // Le point est un opérateur binaire
         Node newNode = nodes.removeFirst();
         Node currentNode = nodes.getFirst();
