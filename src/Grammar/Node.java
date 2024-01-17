@@ -117,6 +117,12 @@ public class Node {
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
+    // ARBRE ABSTRAIT
+    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
+
     private boolean treeContainsErrors(Node node) {
         if (node.status == 1) {
             return true;
@@ -128,6 +134,9 @@ public class Node {
         }
         return false;
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
 
     public void buildAbstractTree() {
         System.out.println("-".repeat(100));
@@ -173,6 +182,10 @@ public class Node {
         }
     }
 
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+
     private ArrayList<Node> declarations(Node declarationStar) {
         ArrayList<Node> declarations = new ArrayList<Node>();
 
@@ -210,9 +223,9 @@ public class Node {
                 if (terminalToken.getType().getName().equals("IDENTIFIER")) {
                     return declarationIdentifier(declaration);
                 } else if (terminalToken.getValue().equals("procedure")) {
-                    // TODO
+                    return declarationProcedure(declaration);
                 } else if (terminalToken.getValue().equals("function")) {
-                    // TODO
+                    return declarationFunction(declaration);
                 }
 
             }
@@ -304,7 +317,161 @@ public class Node {
         return newDeclaration;
     }
 
+    private Node declarationProcedure(Node declaration) {
+        if (declaration == null) {
+            return null;
+        }
 
+        if (!declaration.getToken().getValue().equals("declaration") || declaration.getChildren().size() != 11) {
+            return declaration;
+        }
+
+        // Construction de la nouvelle déclaration ---------------------------------------------
+        Node newDeclaration = new Node("declarationProcedure", new NonTerminalToken("declarationProcedure"));
+
+        // 1 supprimer le mot clé procedure
+        declaration.getChildren().removeFirst();
+        // 2 récupérer l'identificateur
+        Node identifierNode = declaration.getChildren().removeFirst();
+        // 3 récupérer parameters0or1
+        Node parameters0or1Node = declaration.getChildren().removeFirst();
+        // 4 supprimer le is
+        declaration.getChildren().removeFirst();
+        // 5 récupérer declarationStar
+        Node declarationStarNode = declaration.getChildren().removeFirst();
+        // 6 supprimer le begin
+        declaration.getChildren().removeFirst();
+        // 7 récupérer instruction
+        Node instructionNode = declaration.getChildren().removeFirst();
+        // 8 récupérer instructionPlus
+        Node instructionPlusNode = declaration.getChildren().removeFirst();
+        // 9 supprimer le end
+        declaration.getChildren().removeFirst();
+        // 10 récupérer identificator0or1
+        Node identificator0or1Node = declaration.getChildren().removeFirst();
+        // 11 supprimer le ;
+        declaration.getChildren().removeFirst();
+
+        newDeclaration.addChild(identifierNode);
+
+        if (!parameters0or1Node.getChildren().isEmpty()) {
+            // TODO : Gestion des paramètres
+        }
+
+        ArrayList<Node> declarations = declarations(declarationStarNode);
+
+        if (!declarations.isEmpty()) {
+            // Ajout des déclarations potentielles
+            newDeclaration.getChildren().addAll(declarations);
+        }
+
+        ArrayList<Node> instructions = instructions(instructionNode);
+
+        if (instructions.isEmpty()) {
+            return declaration;
+        }
+        instructions.addAll(instructions(instructionPlusNode));
+
+        Node instructionsNode = new Node("instructions", new NonTerminalToken("instructions"));
+        instructionsNode.getChildren().addAll(instructions);
+
+        newDeclaration.addChild(instructionsNode);
+
+
+        if (!identificator0or1Node.getChildren().isEmpty()) {
+            newDeclaration.getChildren().add(identificator0or1Node.getChildren().removeFirst());
+        }
+
+        return newDeclaration;
+    }
+
+    private Node declarationFunction(Node declaration) {
+        if (declaration == null) {
+            return null;
+        }
+
+        if (!declaration.getToken().getValue().equals("declaration") || declaration.getChildren().size() != 13) {
+            return declaration;
+        }
+
+        // Construction de la nouvelle déclaration ---------------------------------------------
+        Node newDeclaration = new Node("function", new NonTerminalToken("function"));
+
+        // 1 supprimer le mot clé function
+        declaration.getChildren().removeFirst();
+        // 2 récupérer l'identificateur
+        Node identifierNode = declaration.getChildren().removeFirst();
+        // 3 récupérer parameters0or1
+        Node parameters0or1Node = declaration.getChildren().removeFirst();
+        // 4 supprimer le return
+        declaration.getChildren().removeFirst();
+        // 5 récupérer type
+        Node typeNode = declaration.getChildren().removeFirst();
+        // 6 supprimer le is
+        declaration.getChildren().removeFirst();
+        // 7 récupérer declarationStar
+        Node declarationStarNode = declaration.getChildren().removeFirst();
+        // 8 supprimer le begin
+        declaration.getChildren().removeFirst();
+        // 9 récupérer instruction
+        Node instructionNode = declaration.getChildren().removeFirst();
+        // 10 récupérer instructionPlus
+        Node instructionPlusNode = declaration.getChildren().removeFirst();
+        // 11 supprimer le end
+        declaration.getChildren().removeFirst();
+        // 12 récupérer identificator0or1
+        Node identificator0or1Node = declaration.getChildren().removeFirst();
+        // 13 supprimer le ;
+        declaration.getChildren().removeFirst();
+
+        newDeclaration.addChild(identifierNode);
+
+        if (!parameters0or1Node.getChildren().isEmpty()) {
+            // TODO : Gestion des paramètres
+        }
+
+        if (typeNode.getChildren().size()==1) {
+            newDeclaration.addChild(typeNode.getChildren().removeFirst());
+        } else {
+            newDeclaration.addChild(typeNode);
+        }
+
+        ArrayList<Node> declarations = declarations(declarationStarNode);
+
+        if (!declarations.isEmpty()) {
+            // Ajout des déclarations potentielles
+            newDeclaration.getChildren().addAll(declarations);
+        }
+
+        ArrayList<Node> instructions = instructions(instructionNode);
+
+        if (instructions.isEmpty()) {
+            return declaration;
+        }
+
+        instructions.addAll(instructions(instructionPlusNode));
+
+        Node instructionsNode = new Node("instructions", new NonTerminalToken("instructions"));
+        instructionsNode.getChildren().addAll(instructions);
+
+        if (instructionsNode.getChildren().size() == 1) {
+            // Pas de fils unique
+            newDeclaration.addChild(instructionsNode.getChildren().removeFirst());
+        } else {
+            newDeclaration.addChild(instructionsNode);
+        }
+
+        if (!identificator0or1Node.getChildren().isEmpty()) {
+            newDeclaration.getChildren().add(identificator0or1Node.getChildren().removeFirst());
+        }
+
+        return newDeclaration;
+    }
+
+    private ArrayList<Node> instructions(Node node) {
+        // TODO
+        return new ArrayList<>();
+    }
 
 }
 
