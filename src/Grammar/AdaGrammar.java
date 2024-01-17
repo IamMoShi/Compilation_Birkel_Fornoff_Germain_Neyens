@@ -156,7 +156,10 @@ public class AdaGrammar {
                 return node;
             } catch (Exception e) {
                 System.out.println("catch F1");
-                return null;
+                Node epsilon = new Node("declarationStar -> Epsilon", declarationStar);
+                epsilon.setStatus(3);
+                return epsilon;
+
             }
         });
 
