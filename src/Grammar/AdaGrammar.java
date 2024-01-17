@@ -1220,8 +1220,7 @@ public class AdaGrammar {
 
         Node node = axiom.execute();
         System.out.println(node);
-        Node assignment = node.abstractTreeOne();
-        System.out.println(assignment);
+        node.buildAbstractTree();
         // Node epsilon = node.removeEpsilon();
         // System.out.println(epsilon);
         // Node useful = epsilon.removeTerminalNotUseful();
