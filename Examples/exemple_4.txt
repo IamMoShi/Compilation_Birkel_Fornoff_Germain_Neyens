@@ -2,5 +2,5 @@ with Ada.Text_IO ; use Ada.Text_IO ;
 
 procedure unDebut is
 begin
-    maVariable := (not A and not B or C * D) and E and F ;
+    maVariable := not A and not B or C * D;
 end unDebut ;
