@@ -6,6 +6,7 @@ import Lexer.Lexer;
 
 public class AdaGrammar {
 
+
     private void print(String s) {
         System.out.println("---" + s);
     }
@@ -27,6 +28,9 @@ public class AdaGrammar {
             node.addFailedExplanation("Expected '" + type + "' ; line : " + lexer.getCurrentToken().getLine());
         } else {
             node.addChild(new Node(lexer.getCurrentToken().getValue(), lexer.getCurrentToken()));
+            if (type.equals("ASSIGNMENT")) {
+                System.out.println("**********" + lexer.getCurrentToken().getValue() + "**********" + lexer.getCurrentToken().getType());
+            }
             lexer.nextToken();
         }
         print(type);
@@ -145,7 +149,10 @@ public class AdaGrammar {
                 Node node = new Node("declarationStar -> declaration declarationStar", declarationStar);
                 node.setStatus(2);
                 node.addChild(declaration.execute());
-                node.addChild(declarationStar.execute());
+                Node nextDeclaration = declarationStar.execute();
+                if (nextDeclaration != null) {
+                    node.addChild(nextDeclaration);
+                }
                 return node;
             } catch (Exception e) {
                 System.out.println("catch F1");
@@ -369,6 +376,7 @@ public class AdaGrammar {
                 lexer.nextToken();
 
                 typeTest(node, lexer, "IDENTIFIER");
+                node.addChild(identificatorCommaPlus.execute());
                 return node;
 
             } else {
@@ -786,7 +794,7 @@ public class AdaGrammar {
             System.out.println("current Token : " + lexer.currentTokenValue());
             if (lexer.currentTokenType().equals("L_PARENTHESIS")) {
                 print("(");
-                Node node = new Node("instructionExpressionAssignment -> ( expression ) expressionFollow := expression ;", instructionExpressionAssignment);
+                Node node = new Node("instructionExpressionAssignment -> ( expression expressionComaPlus ) instructionAssignment", instructionExpressionAssignment);
                 node.setStatus(2);
                 node.addChild(new Node(lexer.currentTokenValue(), lexer.getCurrentToken()));
                 lexer.nextToken();
@@ -1168,15 +1176,8 @@ public class AdaGrammar {
         });
 
         Node node = axiom.execute();
-        System.out.println(node);
-        Node assignment = node.abstractTreeOne();
-        System.out.println(assignment);
-        // Node epsilon = node.removeEpsilon();
-        // System.out.println(epsilon);
-        // Node useful = epsilon.removeTerminalNotUseful();
-        // System.out.println(useful);
-        // Node removed = epsilon.removeOneChildNodeTree();
-        // System.out.println(removed);
+        System.out.println("Program raw: " + node);
+        node.abstractTreeOne();
         System.out.println("Test passé");
 
     }

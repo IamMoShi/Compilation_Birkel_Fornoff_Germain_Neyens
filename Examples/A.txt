@@ -1,7 +1,25 @@
-with Ada.Text_IO ; use Ada.Text_IO ;
+with Ada.Text_IO; use Ada.Text_IO;
 
-procedure unDebut is
+procedure Fibonacci is
+    N, C  : Integer := 0;
+    A : Integer;
+    B : Integer;
+    Next : Integer;
+
 begin
-    y := a + b + c;
-end unDebut ;
+    A := 0;
+    B := 1;
 
+    Get(N);
+
+    for I in 1..N loop
+        if I <= 1 then
+            Next := I;
+        else
+            Next := A + B;
+            A := B;
+            B := Next;
+        end if;
+    end loop;
+
+end Fibonacci;

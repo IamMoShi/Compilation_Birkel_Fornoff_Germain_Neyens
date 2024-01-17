@@ -368,17 +368,6 @@ public class Lexer {
         return "";
     }
 
-
-    private void isInteger() {
-        // Catch the current word and check if it is a keyword (enum Keywords)
-        int position = this.positionID;
-        String word = this.currentInteger();
-        if (!word.isEmpty()) {
-            this.newTerminalToken(word, "INTEGER");
-        }
-        this.positionID = position;
-    }
-
     private void isNumber() {
         StringBuilder word = new StringBuilder();
         while (Character.isDigit(this.currentChar)) {
@@ -387,8 +376,17 @@ public class Lexer {
         }
 
         if (this.currentChar == '.' && !word.isEmpty()) {
-            word.append(this.currentChar);
+            char currentChar = this.currentChar;
             this.getNextChar();
+            if (this.currentChar == '.') {
+                this.newTerminalToken(word.toString(), "INTEGER");
+                this.newTerminalToken("..", "DOUBLE_DOT");
+                this.getNextChar();
+                return;
+            } else {
+                word.append(this.currentChar);
+            }
+
         } else if (!word.isEmpty()) {
             this.newTerminalToken(word.toString(), "INTEGER");
             return;
@@ -401,18 +399,12 @@ public class Lexer {
             this.getNextChar();
         }
 
+
+
         if (word.length() > 1) {
             this.newTerminalToken(word.toString(), "FLOAT");
         }
 
-    }
-
-    private void isFloat() {
-        // Catch the current word and check if it is a keyword (enum Keywords)
-        String word = this.currentFloat();
-        if (!word.isEmpty()) {
-            this.newTerminalToken(word, "FLOAT");
-        }
     }
 
     private void isKeyword() {

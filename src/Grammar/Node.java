@@ -56,6 +56,10 @@ public class Node {
         return status;
     }
 
+    public void setRule(String rule) {
+        this.rule = rule;
+    }
+
     public void setStatus(int status) {
         this.status = status;
     }
@@ -113,132 +117,96 @@ public class Node {
         }
     }
 
-    public Node removeEpsilon() {
-        return removeEpsilon(this);
-    }
 
-    private Node removeEpsilon(Node racine) {
-        if (racine == null) {
-            return null;
-        }
-
-        if (racine.getStatus() == 3) {
-            return null;
-        }
-
-        List<Node> descendants = new ArrayList<>();
-        for (Node descendant : racine.getChildren()) {
-            Node newDescendant = removeEpsilon(descendant);
-            if (newDescendant != null) {
-                descendants.add(newDescendant);
-            }
-        }
-
-        racine.setChildren(descendants);
-
-        if (racine.status == 2 && descendants.isEmpty()) {
-            return null;
-        }
-
-        return racine;
-    }
-
-    public Node removeTerminalNotUseful() {
-        return removeTerminalNotUseful(this);
-    }
-
-    private Node removeTerminalNotUseful(Node racine) {
-        if (racine == null) {
-            return null;
-        }
-
-        Node newRacine = new Node(racine.getRule(), racine.getToken());
-        newRacine.setStatus(racine.getStatus());
-
-        if (racine.getChildren().isEmpty()) {
-            // Si c'est un nœud terminal avec la valeur "IDENTIFIER", le conserver
-            TerminalToken token = (TerminalToken) racine.getToken();
-
-            if ("IDENTIFIER".equals(token.getType().getName()) ||
-                    "INTEGER".equals(token.getType().getName()) ||
-                    "FLOAT".equals(token.getType().getName()) ||
-                    "STRING".equals(token.getType().getName()) ||
-                    "CHARACTER".equals(token.getType().getName()) ||
-                    "BOOLEAN".equals(token.getType().getName()) ||
-                    "PLUS".equals(token.getType().getName()) ||
-                    "MINUS".equals(token.getType().getName()) ||
-                    "MULTIPLY".equals(token.getType().getName()) ||
-                    "DIVIDE".equals(token.getType().getName()) ||
-                    "INFERIOR_EQUALS".equals(token.getType().getName()) ||
-                    "INFERIOR".equals(token.getType().getName()) ||
-                    "SUPERIOR_EQUALS".equals(token.getType().getName()) ||
-                    "SUPERIOR".equals(token.getType().getName()) ||
-                    "rem".equals(token.getType().getName()) ||
-                    "and".equals(token.getType().getName()) ||
-                    "or".equals(token.getType().getName()) ||
-                    "ASSIGNMENT".equals(token.getType().getName())
-            ) {
-                return newRacine;
-            } else {
-                // Sinon, le nœud terminal n'est pas utile, donc retourner null
-                return null;
-            }
-        }
-
-        ArrayList<Node> descendants = new ArrayList<>();
-        for (Node descendant : racine.getChildren()) {
-            Node newDescendant = removeTerminalNotUseful(descendant);
-            if (newDescendant != null) {
-                descendants.add(newDescendant);
-            }
-        }
-
-        newRacine.setChildren(descendants);
-
-        // Si tous les descendants ont été retirés, le nœud actuel n'est pas utile, retourner null
-        if (newRacine.getChildren().isEmpty()) {
-            return null;
-        }
-
-        return newRacine;
-    }
-
-
-    public Node removeOneChildNodeTree() {
-        return removeOneChildNodeTree(this);
-    }
-
-    private Node removeOneChildNodeTree(Node racine) {
-        if (racine.getChildren().size() == 1) {
-            return removeOneChildNodeTree(racine.getChildren().getFirst());
-        } else {
-            Node newRacine = new Node(racine.getRule(), racine.getToken());
-            newRacine.setStatus(racine.getStatus());
-            for (Node child : racine.getChildren()) {
-                if (child != null) {
-                    newRacine.addChild(removeOneChildNodeTree(child));
-                }
-            }
-            return newRacine;
-        }
-    }
-
-    public Node correctAssignment(Node currentNode) {
+    private Node removeUselessChain(Node currentNode) {
         if (currentNode == null) {
             return null;
         }
+        if (currentNode.getToken() instanceof NonTerminalToken && currentNode.getChildren().isEmpty()) {
+            return null;
+        }
 
-        assert currentNode.getChildren().size() >= 2;
+        if (currentNode.getToken() instanceof NonTerminalToken && currentNode.getChildren().size() == 1) {
+            return removeUselessChain(currentNode.getChildren().getFirst());
+        }
 
-        Node gauche = currentNode.getChildren().getFirst();
-        Node droite = currentNode.getChildren().get(1);
+        if (currentNode.getToken() instanceof TerminalToken) {
+            return currentNode;
+        }
 
-        return null;
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            Node newChild = removeUselessChain(child);
+            if (newChild != null) {
+                children.add(newChild);
+            }
+        }
+        if (children.isEmpty()) {
+            return null;
+        }
+        currentNode.setChildren(children);
+        return currentNode;
     }
 
+    private Node removeNotUseful(Node currentNode) {
+        if (currentNode == null) {
+            return null;
+        }
+        if (currentNode.getChildren() == null || currentNode.getChildren().isEmpty()) {
+            return currentNode;
+        }
+
+        ArrayList<Node> children = new ArrayList<>();
+
+        for (Node child : currentNode.getChildren()) {
+            if (child == null) {
+                continue;
+            } else if (child.getToken() instanceof TerminalToken terminalToken) {
+
+                if (!terminalToken.getValue().equals("Ada") && !
+                        terminalToken.getValue().equals("Text_IO")
+                ) {
+                    if (terminalToken.getType() != null && !terminalToken.getType().getName().equals("IDENTIFIER")) {
+                        continue;
+                    } else {
+                        children.add(child);
+                    }
+
+                }
+            } else {
+                children.add(removeUselessChain(child));
+            }
+        }
+        currentNode.setChildren(children);
+        return currentNode;
+    }
+
+    private Node factorize(Node currentNode) {
+        if (currentNode == null) {
+            return null;
+        }
+        if (currentNode.getChildren().isEmpty() && currentNode.getToken() instanceof TerminalToken) {
+            return currentNode;
+        }
+
+        if (currentNode.getChildren().size() == 1) {
+            return factorize(currentNode.getChildren().getFirst());
+        }
+
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            children.add(factorize(child));
+        }
+        currentNode.setChildren(children);
+        return currentNode;
+
+    }
 
     public Node abstractTreeOne() {
-        return abstractTreeOne(this);
+        this.setRule("Fichier");
+        abstractTreeOne(this);
+        System.out.println("abstractTreeOne : this : " + this);
+        return this;
     }
 
     private Node abstractTreeOne(Node currentNode) {
@@ -246,21 +214,235 @@ public class Node {
             return null;
         }
 
+        ArrayList<Node> children = new ArrayList<>();
+        for (Node child : currentNode.getChildren()) {
+            if (child.getToken().getValue().equals("declarationStar")) {
+                children.add(abstractTreeDeclarationStar(child));
+            } else {
+                children.add(abstractTreeOne(child));
+            }
+
+        }
+
+        /*
         if (currentNode.getToken().getValue().equals("instruction")) {
             return abstractTreeInstruction(currentNode);
         }
 
-        ArrayList<Node> children = new ArrayList<>();
-        for (Node child : currentNode.getChildren()) {
-            children.add(abstractTreeOne(child));
+        if (currentNode.getToken().getValue().equals("parameters")) {
+            return abstractTreeParameters(currentNode);
         }
+        */
+
+
         currentNode.setChildren(children);
         return currentNode;
+    }
+
+    // DECLARATIONS-----------------------------------------------------------------------------------------------------
+
+
+    private Node abstractTreeDeclarationStar(Node currentNode) {
+
+        // Cas où la règle donnerai epsilon
+        if (currentNode == null || currentNode.getChildren().isEmpty()) {
+            return null;
+        }
+
+        Node newNode;
+
+        if (currentNode.getChildren().size()==1) {
+            newNode = new Node("declaration", new NonTerminalToken("declaration"));
+        } else {
+            newNode = new Node("Declarations", new NonTerminalToken("Declarations"));
+        }
+
+        while (currentNode.getChildren().size() == 2) {
+            newNode.addChild(abstractTreeDeclaration(currentNode.getChildren().removeFirst()));
+            currentNode = currentNode.getChildren().removeLast();
+        }
+
+        newNode.addChild(abstractTreeDeclaration(currentNode.getChildren().removeFirst()));
+
+        return newNode;
+    }
+
+    private Node abstractTreeDeclaration(Node declarationNode) {
+        if (declarationNode == null || declarationNode.getChildren().isEmpty()) {
+            return null;
+        }
+
+        assert declarationNode.getToken().getValue().equals("declaration");
+
+        Node newNode = new Node("declaration", new NonTerminalToken("declaration"));
+
+        try {
+            Node node = declarationNode.getChildren().getFirst();
+            GrammarToken token = node.getToken();
+
+            if (token instanceof TerminalToken terminalToken) {
+
+                if (terminalToken.getType().getName().equals("IDENTIFIER")) {
+                    newNode = abstractTreeDeclarationIdentifier(declarationNode);
+
+                } else if (terminalToken.getValue().equals("procedure")) {
+                    // TODO
+                } else if (terminalToken.getValue().equals("function")) {
+                    // TODO
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return newNode;
+
+    }
+
+    private Node abstractTreeDeclarationIdentifier(Node declarationNode) {
+        if (declarationNode == null || declarationNode.getChildren().isEmpty()) {
+            return null;
+        }
+
+        assert declarationNode.getToken().getValue().equals("IDENTIFIER");
+        assert declarationNode.getChildren().size() == 6;
+
+        // 1 Récupération de l'identifier
+        Node identifierNode = declarationNode.getChildren().removeFirst();
+        assert identifierNode.getToken().getValue().equals("IDENTIFIER");
+
+        // 2 Récupération de l'indentificatorCommaPlus
+        Node identificatorCommaPlusNode = declarationNode.getChildren().removeFirst();
+        assert identificatorCommaPlusNode.getToken().getValue().equals("identificatorCommaPlus");
+
+        // 3 Suppression du :
+
+        declarationNode.getChildren().removeFirst();
+
+        // 4 Récupération du type:
+        Node typeNode = declarationNode.getChildren().removeFirst();
+        assert typeNode.getToken().getValue().equals("type");
+        typeNode = typeNode.getChildren().removeFirst();
+
+        // 6 Suppression du ;
+        declarationNode.getChildren().removeLast();
+
+        // 5 Récupération de l'expressionAssignment
+        Node expressionAssignementNode = declarationNode.getChildren().removeLast();
+        assert expressionAssignementNode.getToken().getValue().equals("expressionAssignment");
+
+        // Contient ce qui est à déclarer
+        Node newNode;
+
+        if (!identificatorCommaPlusNode.getChildren().isEmpty()){
+
+            newNode = new Node("multipleDeclaration", new NonTerminalToken("multipleDeclaration"));
+            newNode.addChild(identifierNode);
+
+            while (!identificatorCommaPlusNode.getChildren().isEmpty()) {
+                assert identificatorCommaPlusNode.getChildren().size() == 3;
+
+                // On enlève la virgule
+                identificatorCommaPlusNode.getChildren().removeFirst();
+
+                // On récupère l'identificateur
+                Node identifier = identificatorCommaPlusNode.getChildren().removeFirst();
+
+                // On ajoute l'identificateur à la liste
+                newNode.addChild(identifier);
+
+                identificatorCommaPlusNode = identificatorCommaPlusNode.getChildren().removeFirst();
+            }
+        } else {
+            newNode = new Node("declaration", new NonTerminalToken("declaration"));
+            newNode.addChild(identifierNode);
+
+        }
+
+        newNode.addChild(typeNode);
+
+        if (!expressionAssignementNode.getChildren().isEmpty()) {
+
+            assert expressionAssignementNode.getChildren().size() == 2;
+
+            Node assignementNode = new Node("ASSIGNMENT", new NonTerminalToken(":="));
+            // Ajoute la partie de déclaration à l'assignement
+            assignementNode.addChild(newNode);
+            // Ajoute l'expression à assigner //TODO
+            assignementNode.addChild(expressionAssignementNode.getChildren().removeLast());
+
+            return assignementNode;
+        }
+        return newNode;
+    }
+
+
+    // PARAMETERS-------------------------------------------------------------------------------------------------------
+
+
+    private Node abstractTreeParameters(Node currentNode) {
+        currentNode = removeUselessChain(currentNode);
+        currentNode = removeNotUseful(currentNode);
+        currentNode.getToken().setValue("parametersList");
+        System.out.println("currentNode : " + currentNode);
+        try {
+            ArrayList<Node> children = new ArrayList<>();
+            children.add(parameter(currentNode.getChildren().removeFirst()));
+
+            if (currentNode.getChildren().isEmpty()) {
+                currentNode.setChildren(children);
+                return currentNode;
+            }
+
+            Node nextParam = currentNode.getChildren().removeFirst(); // Récupération du premier paramètresSemicolonPlus
+
+            while (true) {
+                System.out.println("nextParam : " + nextParam);
+                nextParam.getChildren().removeFirst();
+                children.add(parameter(nextParam.getChildren().removeFirst()));
+                if (nextParam.getChildren().isEmpty()) {
+                    break;
+                }
+                nextParam = nextParam.getChildren().removeFirst();
+            }
+
+            currentNode.setChildren(children);
+            System.out.println("currentNode result : " + currentNode);
+            return currentNode;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    private Node parameter(Node currentNode) {
+        System.out.println("parameter : " + currentNode);
+        try {
+            Node newNode = new Node("param", new NonTerminalToken("parameter"));
+            assert currentNode.getToken().getValue().equals("parameter");
+            assert currentNode.getChildren().size() == 3;
+            currentNode.getChildren().remove(1);
+            newNode.addChild(currentNode.getChildren().removeFirst());
+            newNode.addChild(currentNode.getChildren().removeFirst());
+            return newNode;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     private ArrayList<Node> copyArrayList(ArrayList<Node> arrayList) {
         return new ArrayList<>(arrayList);
     }
+
+
+    // INSTRUCTIONS-----------------------------------------------------------------------------------------------------
+
 
     private Node abstractTreeInstruction(Node currentNode) {
         try {
@@ -276,7 +458,6 @@ public class Node {
         }
         return null;
     }
-
 
     private Node abstractInstruction1(Node currentNode) {
         Node newCurrentNode = null;
@@ -383,6 +564,9 @@ public class Node {
     }
 
 
+    // -----------------------------------------------------------------------------------------------------------------
+
+
     private ArrayList<Node> assignmentExpressions(Node currentNode) {
         if (currentNode == null) {
             return null;
@@ -415,7 +599,6 @@ public class Node {
         return children;
     }
 
-
     private ArrayList<Node> assignmentExpressionsRightPart(Node currentNode) {
         // Ajout en profondeur des noeuds qui sont des tokens terminaux
         if (currentNode == null) {
@@ -435,6 +618,9 @@ public class Node {
         return children;
     }
 
+
+    // -----------------------------------------------------------------------------------------------------------------
+
     private Node initializeBuildParenthesisTree(ArrayList<Node> nodes) {
         System.out.println("initializeBuildParenthesisTree");
         return switch (nodes.getFirst().getToken().getValue()) {
@@ -444,6 +630,7 @@ public class Node {
         };
     }
 
+    // --------------------------------------------------------
 
     private Node buildParenthesisTree(ArrayList<Node> nodes) {
         System.out.println("buildParenthesisTree");
@@ -452,31 +639,42 @@ public class Node {
 
         while (!nodes.isEmpty()) {
             Node currentNode = nodes.getFirst();
-
+            System.out.println("parenthesis currentNode : " + currentNode);
             if (currentNode.getToken().getValue().equals("(")) {
 
                 nodes.removeFirst();
+
                 Node parenthesisNode = new Node("parenthesis", new NonTerminalToken("parenthesis"));
                 Node node = moinsUnaire(nodes);
+                System.out.println("parenthesisTree ( : " + node);
                 parenthesisNode.addChild(node); // On construit l'arbre de la parenthèse
+                System.out.println("parenthesisNode : " + parenthesisNode);
+                System.out.println("Nodes : " + nodes);
                 newNodes.add(parenthesisNode);
+                System.out.println("newNodes : " + newNodes);
 
             } else if (currentNode.getToken().getValue().equals(")")) {
 
                 nodes.removeFirst(); // On enlève la parenthèse fermante
                 System.out.println("parenthesisTree : " + newNodes);
-                return initializeBuildParenthesisTree(newNodes);
+                Node node = initializeBuildParenthesisTree(newNodes);
+                System.out.println("parenthesisTree ) : " + node);
+                return node;
 
             } else if (currentNode.getToken().getValue().equals(";")) {
+                nodes.removeFirst();
                 return initializeBuildParenthesisTree(newNodes);
 
             } else {
+                System.out.println("parenthesisTree else : " + nodes);
                 newNodes.add(nodes.removeFirst());
             }
         }
 
         return initializeBuildParenthesisTree(newNodes);
     }
+
+    // --------------------------------------------------------
 
     private Node moinsUnaire(ArrayList<Node> nodes) {
         System.out.println("moinsUnaire");
@@ -498,6 +696,7 @@ public class Node {
 
     }
 
+    // --------------------------------------------------------
 
     private Node orOrElse(ArrayList<Node> nodes) {
         System.out.println("orOrElse");
@@ -537,6 +736,8 @@ public class Node {
         }
     }
 
+    // --------------------------------------------------------
+
     private Node andAndThen(ArrayList<Node> nodes) {
         System.out.println("andAndThen");
 
@@ -560,7 +761,7 @@ public class Node {
         if (node2.getToken().getValue().equals("and")) {
 
             nodes.removeFirst();
-            Node plusNode = new Node("and Node", new NonTerminalToken("and Node"));
+            Node plusNode = new Node("and", new NonTerminalToken("and Node"));
             plusNode.addChild(node1);
             System.out.println("ici" + plusNode);
             plusNode.addChild(andAndThen(nodes));
@@ -574,6 +775,8 @@ public class Node {
             return etEtEnsuite(notGesture(nodes), nodes);
         }
     }
+
+    // --------------------------------------------------------
 
     private Node notGesture(ArrayList<Node> nodes) {
         if (nodes == null || nodes.size() < 2) {
@@ -595,6 +798,8 @@ public class Node {
         }
         return equalsNotEquals(nodes);
     }
+
+    // --------------------------------------------------------
 
     private Node equalsNotEquals(ArrayList<Node> nodes) {
         System.out.println("equalsNotEquals");
@@ -646,6 +851,8 @@ public class Node {
             return egalDifferent(inferiorSuperior(nodes), nodes);
         }
     }
+
+    // --------------------------------------------------------
 
     private Node inferiorSuperior(ArrayList<Node> nodes) {
         System.out.println("inferiorSuperior");
@@ -719,10 +926,10 @@ public class Node {
         }
     }
 
+    // --------------------------------------------------------
 
     private Node ajouterSoustraire(ArrayList<Node> nodes) {
         System.out.println("ajouterSoustraire");
-        ArrayList<Node> newNodes = new ArrayList<>();
 
         if (nodes == null || nodes.isEmpty()) {
             System.out.println("ajouterSoustraire, nodes is empty");
@@ -743,7 +950,7 @@ public class Node {
         if (node2.getToken().getValue().equals("+")) {
 
             nodes.removeFirst();
-            Node plusNode = new Node("plus Node", new NonTerminalToken("plus Node"));
+            Node plusNode = new Node("plus", new NonTerminalToken("plus Node"));
             plusNode.addChild(node1);
             System.out.println(plusNode);
             plusNode.addChild(ajouterSoustraire(nodes));
@@ -754,7 +961,7 @@ public class Node {
         } else if (node2.getToken().getValue().equals("-")) {
 
             nodes.removeFirst();
-            Node plusNode = new Node("moins Node", new NonTerminalToken("moins Node"));
+            Node plusNode = new Node("moins", new NonTerminalToken("moins Node"));
             plusNode.addChild(node1);
             plusNode.addChild(ajouterSoustraire(nodes));
 
@@ -766,18 +973,19 @@ public class Node {
                 nodes.addFirst(node1);
                 return notGesture(nodes);
             }
+
             // remettre le premier node
             nodes.addFirst(node1);
-
+            System.out.println("ajouterSoustraire Else, nodes : " + nodes);
             return additionSoustractionNode(multiplierDiviserRem(nodes), nodes);
         }
 
     }
 
+    // --------------------------------------------------------
 
     private Node multiplierDiviserRem(ArrayList<Node> nodes) {
-
-        ArrayList<Node> newNodes = new ArrayList<>();
+        System.out.println("multiplierDiviserRem, nodes : " + nodes);
 
         if (nodes == null || nodes.isEmpty()) {
             return null;
@@ -795,21 +1003,24 @@ public class Node {
         if (node2.getToken().getValue().equals("*")) {
             nodes.removeFirst();
 
-            Node plusNode = new Node("multiplier Node", new NonTerminalToken("multiplier Node"));
+            Node plusNode = new Node("fois", new NonTerminalToken("multiplier Node"));
             plusNode.addChild(node1);
+            System.out.println(plusNode);
             plusNode.addChild(multiplierDiviserRem(nodes));
+            System.out.println("multiplierDiviserRem, multiplierNode : " + plusNode);
+            System.out.println("nodes : " + nodes);
             return plusNode;
         } else if (node2.getToken().getValue().equals("/")) {
             nodes.removeFirst();
 
-            Node plusNode = new Node("diviser Node", new NonTerminalToken("diviser Node"));
+            Node plusNode = new Node("diviser", new NonTerminalToken("diviser Node"));
             plusNode.addChild(node1);
             plusNode.addChild(multiplierDiviserRem(nodes));
             return plusNode;
         } else if (node2.getToken().getValue().equals("rem")) {
             nodes.removeFirst();
 
-            Node plusNode = new Node("rem Node", new NonTerminalToken("rem Node"));
+            Node plusNode = new Node("rem", new NonTerminalToken("rem Node"));
             plusNode.addChild(node1);
             plusNode.addChild(multiplierDiviserRem(nodes));
             return plusNode;
@@ -823,6 +1034,8 @@ public class Node {
         }
     }
 
+    // --------------------------------------------------------
+
     private Node dotGesture(ArrayList<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return null;
@@ -833,7 +1046,7 @@ public class Node {
             return nodes.removeFirst();
         }
 
-        System.out.println("dotGesture , first node : " + nodes.getFirst().getToken().getValue());
+        System.out.println("dotGesture , first node : " + nodes.getFirst());
         // Le point est un opérateur binaire
         Node newNode = nodes.removeFirst();
         Node currentNode = nodes.getFirst();
@@ -849,13 +1062,18 @@ public class Node {
         return newNode;
     }
 
+    // --------------------------------------------------------
+    // AJOUT D'ARBRE A DROITE D'UN NOEUD
+    // --------------------------------------------------------
+
     private Node additionSoustractionNode(Node filsGauche, ArrayList<Node> nodes) {
+        System.out.println("additionSoustractionNode, nodes : " + nodes);
         if (nodes == null || nodes.isEmpty()) {
-            return null;
+            return filsGauche;
         }
         if (nodes.getFirst().getToken().getValue().equals("+")) {
             nodes.removeFirst();
-            Node plusNode = new Node("plus Node", new NonTerminalToken("plus Node"));
+            Node plusNode = new Node("plus", new NonTerminalToken("plus Node"));
             plusNode.addChild(filsGauche);
             plusNode.addChild(ajouterSoustraire(nodes));
             return plusNode;
@@ -869,6 +1087,8 @@ public class Node {
             return filsGauche;
         }
     }
+
+    // --------------------------------------------------------
 
     private Node inferieurSuperieur(Node filsGauche, ArrayList<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
@@ -903,6 +1123,8 @@ public class Node {
         }
     }
 
+    // --------------------------------------------------------
+
     private Node egalDifferent(Node filsGauche, ArrayList<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return filsGauche;
@@ -924,13 +1146,15 @@ public class Node {
         }
     }
 
+    // --------------------------------------------------------
+
     private Node etEtEnsuite(Node filsGauche, ArrayList<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return filsGauche;
         }
         if (nodes.getFirst().getToken().getValue().equals("and")) {
             nodes.removeFirst();
-            Node plusNode = new Node("and Node", new NonTerminalToken("and Node"));
+            Node plusNode = new Node("and", new NonTerminalToken("and Node"));
             plusNode.addChild(filsGauche);
             plusNode.addChild(andAndThen(nodes));
             return plusNode;
@@ -938,6 +1162,8 @@ public class Node {
             return filsGauche;
         }
     }
+
+    // --------------------------------------------------------
 
     private Node ouOuSinon(Node filsGauche, ArrayList<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
