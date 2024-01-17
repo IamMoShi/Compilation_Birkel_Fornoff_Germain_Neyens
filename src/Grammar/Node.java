@@ -616,7 +616,7 @@ public class Node {
         if (instructionNode.getChildren().size() == 2) {
             Node leftPart = instructionNode.getChildren().removeFirst(); // TODO
             Node assignment = instructionExpressionAssignment(instructionNode.getChildren().removeFirst());
-            assignment.addChild(leftPart);
+            assignment.getChildren().addFirst(leftPart);
             newInstructionNode.addChild(assignment);
             return newInstructionNode;
         }
@@ -991,19 +991,616 @@ public class Node {
             return null;
         }
 
-        // TODO
+        if (expressionsNode.getChildren().size() == 2) {
+
+            if (expressionsNode.getChildren().getLast().getChildren().size() == 5) {
+                Node expressionFactNode = expressionsNode.getChildren().getLast();
+                Node callFunctionNode = callFunction(expressionFactNode);
+                callFunctionNode.getChildren().addFirst(expressionsNode.getChildren().removeFirst()); // TODO
+                return callFunctionNode;
+
+            }
+
+            Node expressionNode = new Node("expression", new NonTerminalToken("expression"));
+            expressionNode.setChildren(modificationTreeExpression(expressionsNode));
+            return expressionNode;
+        }
+
 
         return null;
     }
 
 
+    private ArrayList<Node> modificationTreeExpression(Node expressionsModifications) {
+        if (expressionsModifications == null) {
+            return null;
+        }
 
+        if (expressionsModifications.getChildren().isEmpty()) {
+            ArrayList<Node> children = new ArrayList<>();
+            children.add(expressionsModifications);
+            return children;
+        }
 
+        ArrayList<Node> children = new ArrayList<>();
 
+        for (Node child : expressionsModifications.getChildren()) {
+            if (child.getToken().getValue().equals("expression")) {
+                children.add(expression(child));
+            } else if (child.getToken() instanceof TerminalToken || !child.getChildren().isEmpty()) {
+                children.addAll(modificationTreeExpression(child));
+            }
+        }
+
+        Node expressionNode = new Node("expression", new NonTerminalToken("expression"));
+        System.out.println(initializeBuildParenthesisTree(children));
+
+        return children;
+    }
 
 
     // -----------------------------------------------------------------------------------------------------------------
 
+    // -----------------------------------------------------------------------------------------------------------------
+
+    private Node initializeBuildParenthesisTree(ArrayList<Node> nodes) {
+        System.out.println("initializeBuildParenthesisTree");
+        return switch (nodes.getFirst().getToken().getValue()) {
+            case "(" -> buildParenthesisTree(nodes);
+            case "-" -> moinsUnaire(nodes);
+            default -> orOrElse(nodes);
+        };
+    }
+
+    // --------------------------------------------------------
+
+    private Node buildParenthesisTree(ArrayList<Node> nodes) {
+        System.out.println("buildParenthesisTree");
+
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        while (!nodes.isEmpty()) {
+            Node currentNode = nodes.getFirst();
+            System.out.println("parenthesis currentNode : " + currentNode);
+            if (currentNode.getToken().getValue().equals("(")) {
+
+                nodes.removeFirst();
+
+                Node parenthesisNode = new Node("parenthesis", new NonTerminalToken("parenthesis"));
+                Node node = moinsUnaire(nodes);
+                System.out.println("parenthesisTree ( : " + node);
+                parenthesisNode.addChild(node); // On construit l'arbre de la parenthèse
+                System.out.println("parenthesisNode : " + parenthesisNode);
+                System.out.println("Nodes : " + nodes);
+                newNodes.add(parenthesisNode);
+                System.out.println("newNodes : " + newNodes);
+
+            } else if (currentNode.getToken().getValue().equals(")")) {
+
+                nodes.removeFirst(); // On enlève la parenthèse fermante
+                System.out.println("parenthesisTree : " + newNodes);
+                Node node = initializeBuildParenthesisTree(newNodes);
+                System.out.println("parenthesisTree ) : " + node);
+                return node;
+
+            } else if (currentNode.getToken().getValue().equals(";")) {
+                nodes.removeFirst();
+                return initializeBuildParenthesisTree(newNodes);
+
+            } else {
+                System.out.println("parenthesisTree else : " + nodes);
+                newNodes.add(nodes.removeFirst());
+            }
+        }
+
+        return initializeBuildParenthesisTree(newNodes);
+    }
+
+    // --------------------------------------------------------
+
+    private Node moinsUnaire(ArrayList<Node> nodes) {
+        System.out.println("moinsUnaire");
+        if (nodes.isEmpty()) {
+            System.out.println("moinsUnaire, nodes is empty");
+            return null;
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+
+            Node moinsUnaireNode = new Node("Moins unaire", new NonTerminalToken("Moins unaire"));
+            Node moins = nodes.removeFirst();
+            moinsUnaireNode.addChild(buildParenthesisTree(nodes));
+            moinsUnaireNode.getChildren().addFirst(moins);
+            System.out.println("moinsUnaire, moinsUnaireNode : " + moinsUnaireNode);
+            return moinsUnaireNode;
+        }
+        return buildParenthesisTree(nodes);
+
+    }
+
+    // --------------------------------------------------------
+
+    private Node orOrElse(ArrayList<Node> nodes) {
+        System.out.println("orOrElse");
+
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("or")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("or Node", new NonTerminalToken("or Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(orOrElse(nodes));
+
+            System.out.println("or, orNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return ouOuSinon(andAndThen(nodes), nodes);
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node andAndThen(ArrayList<Node> nodes) {
+        System.out.println("andAndThen");
+
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("and")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("and", new NonTerminalToken("and Node"));
+            plusNode.addChild(node1);
+            System.out.println("ici" + plusNode);
+            plusNode.addChild(andAndThen(nodes));
+
+            System.out.println("and, andNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return etEtEnsuite(notGesture(nodes), nodes);
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node notGesture(ArrayList<Node> nodes) {
+        if (nodes == null || nodes.size() < 2) {
+            return null;
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("-")) {
+            return initializeBuildParenthesisTree(nodes);
+        }
+        if (nodes.getFirst().getToken().getValue().equals("(")) {
+            return initializeBuildParenthesisTree(nodes);
+        }
+
+        if (nodes.getFirst().getToken().getValue().equals("not")) {
+            Node notNode = new Node("not Node", new NonTerminalToken("not Node"));
+            notNode.addChild(nodes.removeFirst());
+            notNode.addChild(notGesture(nodes));
+            return notNode;
+        }
+        return equalsNotEquals(nodes);
+    }
+
+    // --------------------------------------------------------
+
+    private Node equalsNotEquals(ArrayList<Node> nodes) {
+        System.out.println("equalsNotEquals");
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("=")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(equalsNotEquals(nodes));
+
+            System.out.println("equals, equalsNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals("/=")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(equalsNotEquals(nodes));
+
+            System.out.println("notEquals, notEqualsNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return egalDifferent(inferiorSuperior(nodes), nodes);
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node inferiorSuperior(ArrayList<Node> nodes) {
+        System.out.println("inferiorSuperior");
+        ArrayList<Node> newNodes = new ArrayList<>();
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals(">")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("superior Node", new NonTerminalToken("superior Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(inferiorSuperior(nodes));
+
+            System.out.println("superior, superiorNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals("<")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("inferior Node", new NonTerminalToken("inferior Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(inferiorSuperior(nodes));
+
+            System.out.println("inferior, inferiorNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals(">=")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("superiorEquals Node", new NonTerminalToken("superiorEquals Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(inferiorSuperior(nodes));
+
+            System.out.println("superiorEquals, superiorEqualsNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals("<=")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("inferiorEquals Node", new NonTerminalToken("inferiorEquals Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(inferiorSuperior(nodes));
+
+            System.out.println("inferiorEquals, inferiorEqualsNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
+            // remettre le premier node
+            nodes.addFirst(node1);
+            return inferieurSuperieur(ajouterSoustraire(nodes), nodes);
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node ajouterSoustraire(ArrayList<Node> nodes) {
+        System.out.println("ajouterSoustraire");
+
+        if (nodes == null || nodes.isEmpty()) {
+            System.out.println("ajouterSoustraire, nodes is empty");
+            // Pour éviter de planter
+            return null;
+        }
+        // Récupérer l'expression à lire
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            System.out.println("plus rien à faire");
+            // Il n'y a plus d'opération à faire
+            return node1;
+        }
+
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("+")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("plus", new NonTerminalToken("plus Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(ajouterSoustraire(nodes));
+
+            System.out.println("ajouterSoustraire, plusNode : " + plusNode);
+            return plusNode;
+
+        } else if (node2.getToken().getValue().equals("-")) {
+
+            nodes.removeFirst();
+            Node plusNode = new Node("moins", new NonTerminalToken("moins Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(ajouterSoustraire(nodes));
+
+            System.out.println("ajouterSoustraire, moinsNode : " + plusNode);
+            return plusNode;
+
+        } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
+
+            // remettre le premier node
+            nodes.addFirst(node1);
+            System.out.println("ajouterSoustraire Else, nodes : " + nodes);
+            return additionSoustractionNode(multiplierDiviserRem(nodes), nodes);
+        }
+
+    }
+
+    // --------------------------------------------------------
+
+    private Node multiplierDiviserRem(ArrayList<Node> nodes) {
+        System.out.println("multiplierDiviserRem, nodes : " + nodes);
+
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+
+        Node node1 = dotGesture(nodes);
+
+        if (nodes.size() <= 1) {
+            return node1;
+        }
+
+        System.out.println("multiplierDiviserRem, first node : " + nodes.getFirst().getToken().getValue());
+        Node node2 = nodes.getFirst();
+
+        if (node2.getToken().getValue().equals("*")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("fois", new NonTerminalToken("multiplier Node"));
+            plusNode.addChild(node1);
+            System.out.println(plusNode);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            System.out.println("multiplierDiviserRem, multiplierNode : " + plusNode);
+            System.out.println("nodes : " + nodes);
+            return plusNode;
+        } else if (node2.getToken().getValue().equals("/")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("diviser", new NonTerminalToken("diviser Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            return plusNode;
+        } else if (node2.getToken().getValue().equals("rem")) {
+            nodes.removeFirst();
+
+            Node plusNode = new Node("rem", new NonTerminalToken("rem Node"));
+            plusNode.addChild(node1);
+            plusNode.addChild(multiplierDiviserRem(nodes));
+            return plusNode;
+        } else {
+            if (node1.getToken().getValue().equals("not")) {
+                nodes.addFirst(node1);
+                return notGesture(nodes);
+            }
+            return node1;
+
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node dotGesture(ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+
+        if (nodes.size() == 1) {
+            System.out.println("dotGesture first : " + nodes.getFirst());
+            return nodes.removeFirst();
+        }
+
+        System.out.println("dotGesture , first node : " + nodes.getFirst());
+        // Le point est un opérateur binaire
+        Node newNode = nodes.removeFirst();
+        Node currentNode = nodes.getFirst();
+
+        if (currentNode.getToken().getValue().equals(".")) { // Si le prochain token est un point sinon on retourne juste le premier token
+            Node dotNode = new Node("dot Node", new NonTerminalToken("dot Node"));
+            dotNode.addChild(newNode);
+            nodes.removeFirst(); // On enlève le point
+            dotNode.addChild(dotGesture(nodes));
+            newNode = dotNode;
+        }
+
+        return newNode;
+    }
+
+    // --------------------------------------------------------
+    // AJOUT D'ARBRE A DROITE D'UN NOEUD
+    // --------------------------------------------------------
+
+    private Node additionSoustractionNode(Node filsGauche, ArrayList<Node> nodes) {
+        System.out.println("additionSoustractionNode, nodes : " + nodes);
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("+")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("plus", new NonTerminalToken("plus Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(ajouterSoustraire(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("-")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("moins Node", new NonTerminalToken("moins Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(ajouterSoustraire(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node inferieurSuperieur(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals(">")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("superior Node", new NonTerminalToken("superior Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(inferiorSuperior(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("<")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("inferior Node", new NonTerminalToken("inferior Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else if (nodes.getFirst().getToken().getValue().equals(">=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("superiorEquals Node", new NonTerminalToken("superiorEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("<=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("inferiorEquals Node", new NonTerminalToken("inferiorEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(inferiorSuperior(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node egalDifferent(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("=")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("equals Node", new NonTerminalToken("equals Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(equalsNotEquals(nodes));
+            return plusNode;
+        } else if (nodes.getFirst().getToken().getValue().equals("/=")) {
+            nodes.removeFirst();
+            Node moinsNode = new Node("notEquals Node", new NonTerminalToken("notEquals Node"));
+            moinsNode.addChild(filsGauche);
+            moinsNode.addChild(equalsNotEquals(nodes));
+            return moinsNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node etEtEnsuite(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("and")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("and", new NonTerminalToken("and Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(andAndThen(nodes));
+            return plusNode;
+        } else {
+            return filsGauche;
+        }
+    }
+
+    // --------------------------------------------------------
+
+    private Node ouOuSinon(Node filsGauche, ArrayList<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return filsGauche;
+        }
+        if (nodes.getFirst().getToken().getValue().equals("or")) {
+            nodes.removeFirst();
+            Node plusNode = new Node("or Node", new NonTerminalToken("or Node"));
+            plusNode.addChild(filsGauche);
+            plusNode.addChild(orOrElse(nodes));
+            return plusNode;
+        } else {
+            return filsGauche;
+        }
+    }
 
 }
 
