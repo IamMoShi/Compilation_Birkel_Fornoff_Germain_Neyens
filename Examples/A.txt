@@ -1,7 +1,7 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Fibonacci is
-    N, C  : Integer := 0;
+    N, C  : Integer := 0*3;
     A : Integer;
     B : Integer;
     Next : Integer;
@@ -10,7 +10,7 @@ begin
     A := 0;
     B := 1;
 
-    Get(N);
+    Get(F(N), B, C.D);
 
     for I in 1..N loop
         if I <= 1 then

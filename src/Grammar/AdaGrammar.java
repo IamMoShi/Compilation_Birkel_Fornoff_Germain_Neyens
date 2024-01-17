@@ -1177,7 +1177,7 @@ public class AdaGrammar {
 
         Node node = axiom.execute();
         System.out.println("Program raw: " + node);
-        node.abstractTreeOne();
+        node.buildAbstractTree();
         System.out.println("Test passé");
 
     }
