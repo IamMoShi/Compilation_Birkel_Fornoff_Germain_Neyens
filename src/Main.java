@@ -1,9 +1,15 @@
 import Grammar.AdaGrammar;
+import Grammar.Node;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.awt.Desktop;
+//import guru.nidi.graphviz.engine.Format;
+//import guru.nidi.graphviz.engine.Graphviz;
+//import guru.nidi.graphviz.model.MutableGraph;
+//import static guru.nidi.graphviz.model.Factory.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -17,24 +23,55 @@ public class Main {
         File folder = new File(folderPath);
         File[] files = folder.listFiles();
 
-        // Parcourez les fichiers et lisez leur contenu
         if (files != null) {
             for (File file : files) {
                 if (file.isFile() && file.getName().endsWith(".txt")) {
-                    // Lisez le contenu du fichier
                     String content = readFileContent(file);
-                    // Ajoutez le contenu à la liste
                     filesContent.add(content);
                 }
             }
         }
 
-        // Vérifiez si la liste n'est pas vide avant d'appeler la méthode grammar1
         if (!filesContent.isEmpty()) {
             AdaGrammar grammar = new AdaGrammar();
             grammar.grammar1(filesContent.get(0)); // Vous pouvez également parcourir la liste si nécessaire
         } else {
             System.out.println("La liste de contenu des fichiers est vide.");
+        }
+
+        // à décommenter
+        //AdaGrammar grammar = new AdaGrammar();
+        //grammar.grammar1(filesContent.get(0)); // Lancer l'analyse syntaxique
+
+        //grammar.finishDotFile(); // Finaliser et écrire le fichier .dot
+
+        //monArbre();
+
+    }
+
+    private static void monArbre() {
+        try {
+            String dotPath = "src/monArbre.dot";
+            String outputPath = "src/monArbre.png";
+            String[] cmd = new String[]{"dot", "-Tpng", "-o", outputPath, dotPath}; // créeation de la commande
+
+            Runtime rt = Runtime.getRuntime(); // Obtenir l'instance de Runtime
+            Process proc = rt.exec(cmd);
+
+            // Lire la sortie standard et d'erreur
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            String s;
+            while ((s = stdInput.readLine()) != null) { // essentiel
+                System.out.println(s);
+            }
+            while ((s = stdError.readLine()) != null) { // essentiel
+                System.err.println(s);
+            }
+            proc.waitFor();
+            Desktop.getDesktop().open(new File(outputPath));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -50,8 +87,4 @@ public class Main {
         }
         return content.toString();
     }
-
-
-
-
 }

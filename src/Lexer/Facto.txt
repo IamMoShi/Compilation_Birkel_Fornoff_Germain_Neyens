@@ -14,12 +14,10 @@ procedure Facto is
     Resultat : Integer;
 begin
     -- Lire la valeur de N
-    Put_Line("Entrez un nombre pour calculer sa factorielle : ");
     Get(N);
 
     -- Calcul de la factorielle
     Resultat := Calcule_Factorielle(N);
 
     -- Afficher le résultat
-    Put_Line(Integer'Image(Resultat));
 end Facto;
